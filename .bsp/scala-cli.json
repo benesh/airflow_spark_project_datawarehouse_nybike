@@ -1,0 +1,20 @@
+{
+  "name": "scala-cli",
+  "argv": [
+    "/home/ben/.local/share/coursier/bin/.scala-cli.aux",
+    "bsp",
+    "--json-options",
+    "/home/ben/workspace/airflow_spark_project_datawarehouse_nybike/.scala-build/ide-options-v2.json",
+    "--json-launcher-options",
+    "/home/ben/workspace/airflow_spark_project_datawarehouse_nybike/.scala-build/ide-launcher-options.json",
+    "--envs-file",
+    "/home/ben/workspace/airflow_spark_project_datawarehouse_nybike/.scala-build/ide-envs.json",
+    "/home/ben/workspace/airflow_spark_project_datawarehouse_nybike"
+  ],
+  "version": "1.6.0",
+  "bspVersion": "2.1.1",
+  "languages": [
+    "scala",
+    "java"
+  ]
+}
