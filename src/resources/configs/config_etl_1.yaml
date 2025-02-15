@@ -1,0 +1,73 @@
+# source:
+#   url: "jdbc:postgresql://source-host:5432/db"
+#   user: "user"
+#   table : ""
+#   driver: "org.postgresql.Driver"
+#   table: "source_table"
+#   sink: "database"
+
+source :
+  # reader : "ReaderCSVLocal"
+  root_path : "/opt/airflow/include"
+  process_step: STAGE_DATABASE
+
+target:
+  driver: "org.postgresql.Driver"
+  sink: "database_table"
+  url : "jdbc:postgresql://db:5432/postgres"
+  user : "root"
+  password : "your-password"
+  mode : "append"
+
+report:
+  process_name : "ETL-NY-Process-Before-publish"
+  report_type : "ny_bike_report"
+  process_period : "ANNUAL"
+  url: "jdbc:postgresql://db:5432/postgres"
+  user: "root"
+  dbtable: "REPORT_PROCESS"
+  sink: "database_sql"
+  password : "your-password"
+  mode : "append"
+
+etl_conf:
+  columns_to_rename:
+    tripduration: trip_duration
+    starttime: start_at
+    stoptime: stop_at
+    start station id: start_staion_id
+    start station name: start_station_name
+    start station latitude: start_station_latitude
+    start station longitude: start_station_longitude
+    end station id: end_station_id
+    end station name: end_station_name
+    end station latitude: end_station_latitude
+    end station longitude:  end_station_longitude
+    bikeid: bike_id
+    usertype: user_type
+    birth year: customer_year_birth
+    rideable_type: rideable_type
+    started_at: start_at
+    ended_at: stop_at
+    start_station_name: start_station_name
+    start_station_id: start_station_id
+    end_station_name: end_station_name
+    end_station_id: end_station_id
+    start_lat: start_station_latitude
+    start_lng: start_station_longitude
+    end_lat: end_station_latitude
+    end_lng: end_station_longitude
+    member_casual: customer_type
+
+
+
+  columns_to_delete : ["bikeid"]
+  columns_for_ids :
+    ids_columns :
+      date_id_column : 'date_id'
+      station_id_column : 'trip_station_nynike_id'
+      fact_id_column : 'fact_id'
+    column_to_hash : ['trip_duration','start_at','stop_at','start_station_latitude','start_station_longitude','end_station_latitude','end_station_longitude','rideable_type']
+
+  dimensions_time :  
+    datetime_column : 'start_at'
