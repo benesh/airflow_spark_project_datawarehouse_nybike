@@ -322,3 +322,7 @@ INFO: Unsupported notification method: $/setTrace
 2025.02.15 21:23:56 INFO  time: indexed workspace in 5.63s[0m
 Feb 15, 2025 9:24:02 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
 INFO: Unsupported notification method: $/setTrace
+Feb 15, 2025 9:26:30 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+INFO: Unsupported notification method: $/setTrace
+Feb 15, 2025 9:26:32 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+INFO: Unsupported notification method: $/setTrace
