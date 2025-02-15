@@ -1,2 +1,6 @@
 volumes_docker/*
 ./src/configs/*
+.metals
+.scala-build
+.bsp
+.vscode
