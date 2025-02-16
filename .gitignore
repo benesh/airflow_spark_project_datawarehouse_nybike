@@ -1,6 +1,6 @@
 volumes_docker/*
 ./src/configs/*
-.metals
+.metals/*
 .scala-build
 .bsp
 .vscode
