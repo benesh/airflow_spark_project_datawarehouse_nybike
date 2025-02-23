@@ -11,13 +11,13 @@ class SinkDataToIceberg(SinkData):
         # except Exception as e:
         #     print(f"Error writing to {config['iceberg_table_name']}: {e}")
 
-class SinkDataToPostgres(SinkData):
+class SinkDataToDatabase(SinkData):
     def run(self,df:DataFrame, config:Optional[dict]):
         # try:
         df.write.format("jdbc")\
             .option("url", config['url'])\
             .option("driver", config['driver'])\
-            .option("dbtable", config['dbtable'])\
+            .option("dbtable",f'{config['schema']}.{config['dbtable']}')\
             .option("user", config['user'])\
             .option("password", config['password'])\
             .option("batchsize", 10000)\
@@ -30,7 +30,7 @@ class FactorySinkData:
         sink = config['sink']
         if sink == 'SinkDataToIceberg':
             return SinkDataToIceberg().run(df,config)
-        elif sink == 'database_table':
-            return SinkDataToPostgres().run(df,config)
+        elif sink == 'database':
+            return SinkDataToDatabase().run(df,config)
         else :
             raise ValueError("sink not found")

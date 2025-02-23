@@ -1,0 +1,34 @@
+source:
+  url: jdbc:postgresql://db:5432/postgres
+  user: admin
+  password: your-password
+  driver: org.postgresql.Driver
+  dbtable: trip_data_nybike
+  schema: bronze
+  reader: database
+
+target:
+  url: jdbc:postgresql://db:5432/postgres
+  user: admin
+  password : your-password
+  driver: org.postgresql.Driver
+  schema: sylver
+  dbtable: trip_data_nybike
+  sink: database
+  mode: append
+
+report:
+  driver : org.postgresql.Driver
+  url: jdbc:postgresql://db:5432/postgres
+  user: admin
+  sink: database
+  password : your-password
+  # mode : "append"
+
+etl_conf:
+  diff_column:
+    column_result: trip_duration
+    column_greather: stop_at
+    colmun_lesser: start_at
+  dimensions_time :  
+    datetime_column : start_at

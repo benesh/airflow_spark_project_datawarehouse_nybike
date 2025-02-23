@@ -1,6 +1,7 @@
-volumes_docker/*
-./src/configs/*
-.metals/*
-.scala-build
-.bsp/*
-.vscode/*
+./src/configs/
+.metals/
+.scala-build/
+.bsp/
+.vscode/
+volumdes_and_data_services/
+volumes_and_data_services/

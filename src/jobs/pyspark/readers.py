@@ -32,7 +32,7 @@ class ReaderDatabaseTable(Reader):
         return spark.read\
             .format("jdbc") \
                 .option("url", config['url']) \
-                .option("dbtable", config['dbtable']) \
+                .option("dbtable",f'{config['schema']}.{config['dbtable']}')\
                 .option("user", config['user']) \
                 .option("password", config['password']) \
                 .option("driver", config['driver']) \
@@ -66,7 +66,7 @@ class FactoryReader:
             return ReaderCsvFromS3Storage().run(spark,config)
         elif reader == 'PostgresDW':
             return ReaderPostgres().run(spark,config)
-        elif reader == 'database_table':
+        elif reader == 'database':
             return ReaderDatabaseTable().run(spark,config)
         elif reader == 'database_query':
             return ReaderDatabaseQuery().run(spark,config)

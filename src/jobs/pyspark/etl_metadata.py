@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 import os
 
 # Database connection details
-PG_USER = "root"
+PG_USER = "admin"
 PG_PASSWORD = "your-password"
 PG_HOST = "db"  # Replace with your host
 PG_PORT = "5432"       # Default PostgreSQL port
@@ -16,6 +16,8 @@ PG_URL = f"postgresql://{PG_USER}:{PG_PASSWORD}@{PG_HOST}:{PG_PORT}/{PG_DATABASE
 engine = create_engine(PG_URL)
 
 class Data_To_Process(SQLModel,table=True):
+    __table_args__={"schema":"process_report"}
+
     id:int = Field(default=None,primary_key=True)
     data_source_name:str # NY_BIKE_DATA,etc
     process_period:str # ANNUAL, MONTHLY
@@ -23,12 +25,15 @@ class Data_To_Process(SQLModel,table=True):
     year:int
     month:int
     status:str   #value TO_STAGE_DATABASE,FAILURE_TO_STAGE,TO_PROD_DATABASE,FAILURE_PROD,SUCCES_PRODCUTION
-    reader:str   # ReaderCSVLocal
-
+    reader:str   # ReaderCSVLocal,database_table
+    created_at:datetime
+    updated_at:datetime
 
 
 # Define the metadata model
 class ETL_Metadata(SQLModel, table=True):
+    __table_args__={"schema":"process_report"}
+
     id: int = Field(default=None, primary_key=True)
     process_name: str
     start_time: datetime
@@ -84,55 +89,3 @@ def get_by_id_etl_meatada(id:int):
                 .where(ETL_Metadata.status=="SUCCESS")
         result = session.exec(statement).all()
         return result[0]
-
-
-
-
-# # Main ETL process
-# if __name__ == "__main__":
-#     try:
-#         # Step 1: Capture start time and initialize metadata
-#         start_time = datetime.utcnow()
-#         metadata = ETL_Metadata(
-#             process_name="Customer Data ETL",
-#             start_time=start_time,
-#             status="IN_PROGRESS"
-#         )
-#         log_etl_metadata(metadata)  # Log initial metadata
-
-#         # Step 2: Perform ETL operations
-#         print("Starting ETL process...")
-#         # Example: Read data from a source (e.g., CSV file)
-#         input_data = spark.read.csv("path/to/input.csv", header=True, inferSchema=True)
-
-#         # Example: Transform data
-#         transformed_data = input_data.filter(input_data["age"] > 18)
-
-#         # Example: Write data to a destination (e.g., another CSV file)
-#         transformed_data.write.mode("overwrite").csv("path/to/output.csv")
-
-#         # Step 3: Capture end time and update metadata
-#         end_time = datetime.utcnow()
-#         rows_processed = transformed_data.count()
-#         duration = end_time - start_time
-
-#         metadata.end_time = end_time
-#         metadata.duration = duration
-#         metadata.rows_processed = rows_processed
-#         metadata.status = "SUCCESS"
-#         log_etl_metadata(metadata)  # Update metadata
-
-#         print("ETL process completed successfully.")
-
-#     except Exception as e:
-#         # Step 4: Handle errors and update metadata
-#         end_time = datetime.utcnow()
-#         duration = end_time - start_time
-
-#         metadata.end_time = end_time
-#         metadata.duration = duration
-#         metadata.status = "FAILURE"
-#         metadata.error_message = str(e)
-#         log_etl_metadata(metadata)  # Update metadata with error details
-
-#         print(f"ETL process failed: {e}")

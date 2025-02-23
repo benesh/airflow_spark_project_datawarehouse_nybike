@@ -1,6 +1,6 @@
 from interfaces import DataTransformer
 from pyspark.sql import DataFrame
-from pyspark.sql.functions import when,col,lit,hash,datediff,xxhash64,year,quarter,dayofmonth,month,dayofweek,date_format
+from pyspark.sql.functions import when,col,lit,hash,datediff,xxhash64,year,quarter,dayofmonth,month,dayofweek,date_format,concat
 # from utils import get_distnace
 from enum import Enum
 from pydantic import BaseModel
@@ -21,28 +21,28 @@ class RenameColumn(DataTransformer) :
 """
 It should be run over a DataFrame that is final on naming column
 """
-    
+
 class TransformCustomerGenderFormat(DataTransformer):
     def run(self,df:DataFrame, config:Optional[dict]) -> DataFrame:
-        if'GENDER' in df.columns:
-            return df.withColumn("CUSTOMER_GENDER",
-                                 when(col('GENDER') == 1,"Male")
-                                 .when(col('GENDER') == 2,'Female')
-                                 .otherwise('Unknown')).drop('GENDER')
-        return  df.withColumn("CUSTOMER_GENDER",lit("Unknown"))
+        if'gender' in df.columns:
+            return df.withColumn("enr_gender",
+                                 when(col('gender') == 1,"Male")
+                                 .when(col('gender') == 2,'Female')
+                                 .otherwise('Unknown'))
+        return  df.withColumn("enr_gender",lit("Unknown"))
     
 class TransformCustomerTypeFormat(DataTransformer):
     def run(self,df:DataFrame, config:Optional[dict]) -> DataFrame:
-        if'USER_TYPE' in df.columns:
-            return df.withColumn("CUSTOMER_TYPE",
-                                 when(df['USER_TYPE'] == 'Subscriber',"Member")
-                                 .otherwise('Customer')).drop('USER_TYPE')
+        if'user_type' in df.columns:
+            return df.withColumn("customer_type",
+                                 when(df['user_type'] == 'Subscriber',"Member")
+                                 .otherwise('Customer')).drop('user_type')
         return  df
 
-class AddTripDuration(DataTransformer):
+class AddColumnDiffTime(DataTransformer):
     def run(self,df:DataFrame,config:Optional[dict]) -> DataFrame:
-        if 'TRIP_DURATION' in df.columns:
-            return df.withColumn('TRIP_DURATION',datediff(col('STOP_AT'),col('START_AT')))
+        if config['column_result'] not in df.columns:
+            return df.withColumn(config['column_result'],datediff(col(config['column_greather']),col(config['colmun_lesser'])))
         return df
     
 class AddColumnIDs(DataTransformer):
@@ -53,19 +53,21 @@ class AddColumnIDs(DataTransformer):
 
 class AddRideType(DataTransformer):
     def run(self,df:DataFrame,config:Optional[dict]) -> DataFrame:
-        if 'RIDEBLE_TYPE' not in df.columns :
-            return df.withColumn('RIDEABLE_TYPE',lit('classic_bike'))
+        # print(df.columns)
+        if 'rideable_type' in df.columns :
+            return df.withColumn('rideable_type',lit('classic_bike'))
         return df
 
 class  AddDimensionsForTimes(DataTransformer):
     def run(self,df:DataFrame,config:Optional[dict]):
-        return df.withColumn('YEAR', year(config['datetime_column'])) \
-             .withColumn('MONTH', month(config['datetime_column'])) \
-             .withColumn('QUARTER', quarter(config['datetime_column'])) \
-             .withColumn('DAY', dayofmonth(config['datetime_column'])) \
-             .withColumn('WEEKDAY', dayofweek(config['datetime_column'])) \
-             .withColumn('MONTH_NAME', date_format(config['datetime_column'], 'MMMM')) \
-             .withColumn('WEEKDAYNAME', date_format(config['datetime_column'], 'EEEE'))
+        return df.withColumn('year', year(config['datetime_column'])) \
+             .withColumn('month', month(config['datetime_column'])) \
+             .withColumn('quarter', quarter(config['datetime_column'])) \
+             .withColumn('quarter_name', concat(col('year'), lit('Q'), col('quarter'))) \
+             .withColumn('day', dayofmonth(config['datetime_column'])) \
+             .withColumn('weekday', dayofweek(config['datetime_column'])) \
+             .withColumn('month_name', date_format(config['datetime_column'],'MMMM')) \
+             .withColumn('weekday_name', date_format(config['datetime_column'],'EEEE'))
         # return df
 
 
@@ -80,7 +82,7 @@ class FactoryDataTransformer(Enum):
     DROP_COLUMNS ='drop_columns'
     GENDER_TRANSFORMER_OR_ADD = 'gender_transformer_or_add'
     ADD_BIKE_TYPE = 'add_bike_type'
-    ADD_TRIP_DURATION ='add_trip_duration'
+    ADD_COLUMN_DIFF_TIME ='add_trip_duration'
     TRANSFORM_CUSTOMER_COLUMN ='transform_customer_column'
     ADD_COLUMN_IDS='add_column_ids'
     ADD_DIMENSIONS_TIME='add_column_time'
@@ -91,7 +93,7 @@ class FactoryDataTransformer(Enum):
             self.RENAME_COLUMNS:RenameColumn(),
             self.DROP_COLUMNS:DropColumns(),
             self.GENDER_TRANSFORMER_OR_ADD:TransformCustomerGenderFormat(),
-            self.ADD_TRIP_DURATION:AddTripDuration(),
+            self.ADD_COLUMN_DIFF_TIME:AddColumnDiffTime(),
             self.ADD_BIKE_TYPE : AddRideType(),
             self.ADD_COLUMN_IDS : AddColumnIDs(),
             self.TRANSFORM_CUSTOMER_COLUMN:TransformCustomerTypeFormat(),

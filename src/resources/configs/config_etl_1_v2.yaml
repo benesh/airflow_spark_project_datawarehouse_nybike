@@ -1,0 +1,60 @@
+
+source :
+  reader : ReaderCSVLocal
+  root_path : /opt/airflow/include
+  process_step: BRONZE_STAGE
+
+target:
+  driver: org.postgresql.Driver
+  sink: database
+  url : jdbc:postgresql://db:5432/postgres
+  user : admin
+  password : your-password
+  schema: bronze
+  mode : append
+  dbtable: trip_data_nybike
+
+report:
+  process_name : ETL-NY-Process-Before-publish
+  report_type : ny_bike_report
+  process_period : ANNUAL
+  url: jdbc:postgresql://db:5432/postgres
+  user: admin
+  dbtable: REPORT_PROCESS
+  sink: database
+  password : your-password
+  mode : append
+
+etl_conf:
+  columns_to_rename:
+    tripduration: trip_duration
+    starttime: start_at
+    stoptime: stop_at
+    start station id: start_station_id
+    start station name: start_station_name
+    start station latitude: start_station_latitude
+    start station longitude: start_station_longitude
+    end station id: end_station_id
+    end station name: end_station_name
+    end station latitude: end_station_latitude
+    end station longitude:  end_station_longitude
+    bikeid: bike_id
+    usertype: user_type
+    birth year: customer_year_birth
+    started_at: start_at
+    ended_at: stop_at
+    start_station_name: start_station_name
+    end_station_name: end_station_name
+    end_station_id: end_station_id
+    start_lat: start_station_latitude
+    start_lng: start_station_longitude
+    end_lat: end_station_latitude
+    end_lng: end_station_longitude
+    member_casual: user_type
+
+
+#"FAILURE_TO_BRONZE_LAYER"
+#
+
+
+
