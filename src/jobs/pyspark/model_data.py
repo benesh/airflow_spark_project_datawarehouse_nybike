@@ -71,6 +71,7 @@ class ModelDatawahouseNYBikeV2:
 
 # Define the schema
 bronze_schema_ny_bike = StructType([
+    StructField("dw_period_tag", StringType(), nullable=True),
     StructField("start_station_id", StringType(), nullable=True),
     StructField("start_station_name", StringType(), nullable=True),
     StructField("start_station_latitude", DoubleType(), nullable=True),
@@ -90,6 +91,7 @@ bronze_schema_ny_bike = StructType([
 ])
 
 sylver_schema_ny_bike = StructType([
+    StructField("dw_period_tag", StringType(), nullable=True),
     StructField("start_station_id", StringType(), nullable=True),
     StructField("start_station_name", StringType(), nullable=True),
     StructField("start_station_latitude", DoubleType(), nullable=True),
@@ -99,8 +101,6 @@ sylver_schema_ny_bike = StructType([
     StructField("end_station_latitude", DoubleType(), nullable=True),
     StructField("end_station_longitude", DoubleType(), nullable=True),
     StructField("bike_id", IntegerType(), nullable=True),
-    StructField("user_type", StringType(), nullable=True),
-    StructField("gender", StringType(), nullable=True),
     StructField("enr_gender", StringType(), nullable=True),
     StructField("customer_year_birth", StringType(), nullable=True),
     StructField("rideable_type", StringType(), nullable=True),

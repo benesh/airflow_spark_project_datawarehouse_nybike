@@ -24,8 +24,8 @@ class Data_To_Process(SQLModel,table=True):
     path_csv:str
     year:int
     month:int
+    period_tag:str
     status:str   #value TO_STAGE_DATABASE,FAILURE_TO_STAGE,TO_PROD_DATABASE,FAILURE_PROD,SUCCES_PRODCUTION
-    reader:str   # ReaderCSVLocal,database_table
     created_at:datetime
     updated_at:datetime
 
@@ -45,7 +45,6 @@ class ETL_Metadata(SQLModel, table=True):
     year: int
     month:int
     data_to_process_id_fk:int
-    # data_nybike_id_fk:int = Field(default=None,foreign_key="data_to_process.id")
     error_message: str | None = None
 
 

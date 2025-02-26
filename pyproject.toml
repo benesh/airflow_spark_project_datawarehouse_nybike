@@ -1,10 +1,21 @@
-[project]
-name = "airflow-spark-project-datawarehouse-nybike"
+[tool.poetry]
+name = "etl-datawahouse-nybike"
 version = "0.1.0"
-description = "Add your description here"
+description = ""
+authors = ["Ben_omar <bennessh@gmail.com>"]
 readme = "README.md"
-requires-python = ">=3.12"
-dependencies = [
-    "pyspark>=3.5.4",
-    "sqlmodel>=0.0.22",
-]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+pyspark = "^3.5.4"
+pytest = "^8.3.4"
+sqlmodel = "^0.0.22"
+pydantic = "^2.10.6"
+chispa = "^0.10.1"
+pandas = "^2.2.3"
+pyarrow = "^19.0.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

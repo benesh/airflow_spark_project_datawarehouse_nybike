@@ -1,7 +1,7 @@
 
 source :
-  reader : ReaderCSVLocal
-  root_path : /opt/airflow/include
+  reader: ReaderCSVLocal
+  root_path: /opt/airflow/include
   process_step: BRONZE_STAGE
 
 target:
@@ -51,6 +51,9 @@ etl_conf:
     end_lat: end_station_latitude
     end_lng: end_station_longitude
     member_casual: user_type
+  column_to_add:
+    column_name: dw_period_tag
+    column_value: to_determine
 
 
 #"FAILURE_TO_BRONZE_LAYER"

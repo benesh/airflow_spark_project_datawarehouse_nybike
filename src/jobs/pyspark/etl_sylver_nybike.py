@@ -1,3 +1,4 @@
+import traceback
 from pyspark.sql import SparkSession
 from pyspark import SparkFiles
 from concurrent.futures import ThreadPoolExecutor
@@ -29,15 +30,15 @@ def run(spark:SparkSession,data_to_process:Data_To_Process,config:dict):
         catalog_transformer = [
             DataTransformerObject(
                 transformer= FactoryDataTransformer.ADD_COLUMN_DIFF_TIME,
-                config = config['etl_conf']['diff_column']
+                config= config['etl_conf']['diff_column']
             ),
             DataTransformerObject(
                 transformer= FactoryDataTransformer.GENDER_TRANSFORMER_OR_ADD,
-                config = {}
+                config= {}
             ),
             DataTransformerObject(
                 transformer= FactoryDataTransformer.TRANSFORM_CUSTOMER_COLUMN,
-                config = {}
+                config= {}
             ),
             DataTransformerObject(
                 transformer=FactoryDataTransformer.ADD_DIMENSIONS_TIME,
@@ -49,18 +50,11 @@ def run(spark:SparkSession,data_to_process:Data_To_Process,config:dict):
             )
         ]
 
-        # spark = SparkSession.builder \
-        # .appName("spark-etl_nybike_bronze") \
-        #     .getOrCreate()
-        
         df = FactoryReader().getDataframe(spark,config['source'])
         df = runner_transformer_data(catalog_transformer,df).cache()
 
-        # df.show()
-        # df.printSchema()
-        # print(config['target'])
-
         df = df.to(sylver_schema_ny_bike)
+        df.show()
         FactorySinkData().run(df,config['target'])
         
         # Step 3: Capture end time and update metadata
@@ -74,7 +68,6 @@ def run(spark:SparkSession,data_to_process:Data_To_Process,config:dict):
         log_etl_metadata(metadata)  # Update metadata
 
         data_to_process.status='TO_GOLD_LAYER'
-        data_to_process.reader='database'
         update_data_to_porcess(data_to_process)
         
 
@@ -92,7 +85,7 @@ def run(spark:SparkSession,data_to_process:Data_To_Process,config:dict):
 
         data_to_process.status='FAILURE_TO_SYLVER_LAYER'
         update_data_to_porcess(data_to_process)
-
+        traceback.print_exc()
         print(f"ETL process failed: {e}")
 
 if __name__ == "__main__":
@@ -115,11 +108,8 @@ if __name__ == "__main__":
     #     run(data_to_process = data_to_process,config = config)
     
     data_to_process = result[0]
-    # config['source']['path_csv'] = data_to_process.path_csv
-    # config['source']['month'] = data_to_process.month
-    # config['source']['year'] = data_to_process.year
-    # config['source']['reader'] = data_to_process.reader 
-    # config['source']['process_period'] = data_to_process.process_period 
+    
+    config['source']['dw_period_tag'] = data_to_process.period_tag 
     run(spark,data_to_process = data_to_process,config = config)
 
 

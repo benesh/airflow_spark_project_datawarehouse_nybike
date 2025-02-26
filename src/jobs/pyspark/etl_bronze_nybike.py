@@ -8,6 +8,7 @@ from helpers_utils import config_reader
 from datetime import datetime
 from etl_metadata import ETL_Metadata,log_etl_metadata,get_data_to_process,Data_To_Process,update_data_to_porcess
 from model_data import bronze_schema_ny_bike
+import traceback
 
 
 def run(spark:SparkSession,data_to_process:Data_To_Process,config:dict):
@@ -28,21 +29,19 @@ def run(spark:SparkSession,data_to_process:Data_To_Process,config:dict):
         catalog_transformer = [
             DataTransformerObject(
                 transformer= FactoryDataTransformer.RENAME_COLUMNS,
+                config= config['etl_conf']
+            ),
+            DataTransformerObject(
+                transformer= FactoryDataTransformer.ADD_COLUMN_WITH_LITERAL_VALUE,
                 config = config['etl_conf']
             )
         ]
 
-        # spark = SparkSession.builder \
-        # .appName("spark-etl_nybike_bronze") \
-        #     .getOrCreate()
-        
         df = FactoryReader().getDataframe(spark,config['source'])
-        df = runner_transformer_data(catalog_transformer,df).cache()
-
-        # df.show()
-        df.printSchema()
+        df = runner_transformer_data(catalog_transformer,df)
 
         df = df.to(bronze_schema_ny_bike)
+        
         FactorySinkData().run(df,config['target'])
         
         # Step 3: Capture end time and update metadata
@@ -71,9 +70,8 @@ def run(spark:SparkSession,data_to_process:Data_To_Process,config:dict):
         log_etl_metadata(metadata)  # Update metadata with error details
 
         data_to_process.status='FAILURE_TO_BRONZE_LAYER'
-        data_to_process.reader='database'
         update_data_to_porcess(data_to_process)
-
+        traceback.print_exc()
         print(f"ETL process failed: {e}")
 
 if __name__ == "__main__":
@@ -96,10 +94,13 @@ if __name__ == "__main__":
     
     data_to_process = result[0]
     config['source']['path_csv'] = data_to_process.path_csv
+
     # config['source']['month'] = data_to_process.month
     # config['source']['year'] = data_to_process.year
     # config['source']['reader'] = data_to_process.reader 
-    config['source']['process_period'] = data_to_process.process_period 
+    # config['source']['process_period'] = data_to_process.process_period
+
+    config['etl_conf']['column_to_add']['column_value'] =data_to_process.period_tag
     run(spark,data_to_process = data_to_process,config = config)
 
 
