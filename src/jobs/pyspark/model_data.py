@@ -69,9 +69,49 @@ class ModelDatawahouseNYBikeV2:
         return self._select_and_update_config(df, columns, 'fact_nybike', config)
 
 
+
+# Define the schema as a StructType
+source_old_schema_ny_bike = StructType([
+    StructField("tripduration", IntegerType(), nullable=False),  # Trip duration in seconds
+    StructField("starttime", TimestampType(), nullable=True),    # Start time of the trip
+    StructField("stoptime", TimestampType(), nullable=True),     # Stop time of the trip
+    StructField("start station id", IntegerType(), nullable=True),  # Start station ID
+    StructField("start station name", StringType(), nullable=True),  # Start station name
+    StructField("start station latitude", DoubleType(), nullable=True),  # Start station latitude
+    StructField("start station longitude", DoubleType(), nullable=True),  # Start station longitude
+    StructField("end station id", IntegerType(), nullable=True),  # End station ID
+    StructField("end station name", StringType(), nullable=True),  # End station name
+    StructField("end station latitude", DoubleType(), nullable=True),  # End station latitude
+    StructField("end station longitude", DoubleType(), nullable=True),  # End station longitude
+    StructField("bikeid", IntegerType(), nullable=True),  # Bike ID
+    StructField("usertype", StringType(), nullable=True),  # User type (e.g., Customer or Subscriber)
+    StructField("birth year", IntegerType(), nullable=True),  # Birth year of the user
+    StructField("gender", IntegerType(), nullable=True)  # Gender (e.g., 0 = unknown, 1 = male, 2 = female)
+])
+
+
+# Define the schema as a StructType
+source_actual_schema_ny_bike = StructType([
+    StructField("ride_id", StringType(), nullable=False),         # Unique identifier for the ride
+    StructField("rideable_type", StringType(), nullable=True),    # Type of bike (e.g., classic_bike, electric_bike)
+    StructField("started_at", TimestampType(), nullable=True),    # Start time of the ride
+    StructField("ended_at", TimestampType(), nullable=True),      # End time of the ride
+    StructField("start_station_name", StringType(), nullable=True),  # Name of the start station
+    StructField("start_station_id", StringType(), nullable=True),  # ID of the start station
+    StructField("end_station_name", StringType(), nullable=True),   # Name of the end station
+    StructField("end_station_id", StringType(), nullable=True),     # ID of the end station
+    StructField("start_lat", DoubleType(), nullable=True),          # Latitude of the start location
+    StructField("start_lng", DoubleType(), nullable=True),          # Longitude of the start location
+    StructField("end_lat", DoubleType(), nullable=True),            # Latitude of the end location
+    StructField("end_lng", DoubleType(), nullable=True),            # Longitude of the end location
+    StructField("member_casual", StringType(), nullable=True)       # User type (e.g., member or casual rider)
+])
+
+
 # Define the schema
 bronze_schema_ny_bike = StructType([
     StructField("dw_period_tag", StringType(), nullable=True),
+    StructField("ride_id", StringType(), nullable=True),
     StructField("start_station_id", StringType(), nullable=True),
     StructField("start_station_name", StringType(), nullable=True),
     StructField("start_station_latitude", DoubleType(), nullable=True),
@@ -90,7 +130,9 @@ bronze_schema_ny_bike = StructType([
     StructField("trip_duration", DoubleType(), nullable=True)
 ])
 
+
 sylver_schema_ny_bike = StructType([
+    StructField("trip_uuid", StringType(), nullable=True),
     StructField("dw_period_tag", StringType(), nullable=True),
     StructField("start_station_id", StringType(), nullable=True),
     StructField("start_station_name", StringType(), nullable=True),

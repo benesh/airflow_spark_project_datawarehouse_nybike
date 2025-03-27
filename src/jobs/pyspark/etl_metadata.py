@@ -1,6 +1,7 @@
 from pyspark.sql import SparkSession
 from sqlmodel import create_engine, Session, select,SQLModel,Field
 from datetime import datetime, timedelta
+from typing import Optional
 import os
 
 # Database connection details
@@ -37,15 +38,15 @@ class ETL_Metadata(SQLModel, table=True):
     id: int = Field(default=None, primary_key=True)
     process_name: str
     start_time: datetime
-    end_time: datetime | None = None
-    duration: timedelta | None = None
-    rows_processed: int | None = None
+    end_time:  Optional[datetime] = None
+    duration: Optional[timedelta] = None
+    rows_processed: Optional[int] = None
     status: str   #value IN_PROGRESS,FAILURE,SUCCESS
     process_period:str
     year: int
     month:int
     data_to_process_id_fk:int
-    error_message: str | None = None
+    error_message: Optional[str] = None
 
 
 # Function to log metadata to PostgreSQL
@@ -55,6 +56,7 @@ def log_etl_metadata(metadata: ETL_Metadata):
         session.commit()
         session.refresh(metadata)
 
+        
 def update_data_to_porcess(data: Data_To_Process):
     with Session(engine) as session:
         session.add(data)

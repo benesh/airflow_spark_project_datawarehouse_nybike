@@ -5,22 +5,33 @@ from typing import Optional
 
 class SinkDataToIceberg(SinkData):
     def run(self,df:DataFrame, config:Optional[dict]):
+        print("Sink data to Iceberg")
         # try:
-        df.write.mode(config['mode'])\
-            .saveAsTable(config['iceberg_table_name'])
+        df.write.saveAsTable(name=config['dbtable'],mode = config['mode'],partition='dw_period_tag')
+        # except Exception as e:
+        #     print(f"Error writing to {config['iceberg_table_name']}: {e}")
+class SinkDataToParquetDirectory(SinkData):
+    def run(self,df:DataFrame, config:Optional[dict]):
+        print("Sink data to Iceberg")
+        # try:
+        df.write\
+            .partitionBy(config['column_partition'])\
+                .mode(config['mode']).format("parquet")\
+                    .save(path=config['path'])
         # except Exception as e:
         #     print(f"Error writing to {config['iceberg_table_name']}: {e}")
 
 class SinkDataToDatabase(SinkData):
     def run(self,df:DataFrame, config:Optional[dict]):
         # try:
+        print("Sink data into database initated ")
         df.write.format("jdbc")\
             .option("url", config['url'])\
             .option("driver", config['driver'])\
-            .option("dbtable",f'{config['schema']}.{config['dbtable']}')\
+            .option("dbtable",f'{config["schema"]}.{config["dbtable"]}')\
             .option("user", config['user'])\
             .option("password", config['password'])\
-            .option("batchsize", 10000)\
+            .option("batchsize", 20000)\
                 .mode(config['mode']).save()
         # except Exception as e:
             # print(f"Error writing to {config['dbtable']}: {e}")
@@ -32,5 +43,7 @@ class FactorySinkData:
             return SinkDataToIceberg().run(df,config)
         elif sink == 'database':
             return SinkDataToDatabase().run(df,config)
+        elif sink == 'file_parquet':
+            return SinkDataToParquetDirectory().run(df,config)
         else :
             raise ValueError("sink not found")

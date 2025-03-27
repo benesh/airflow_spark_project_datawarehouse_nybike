@@ -5,6 +5,7 @@ from pyspark.sql.functions import when,col,lit,hash,datediff,xxhash64,year,quart
 from enum import Enum
 from pydantic import BaseModel
 from typing import Optional
+import uuid
 
 class DropColumns(DataTransformer):
     def run(sefl,df:DataFrame,config:Optional[dict]) -> DataFrame:
@@ -24,18 +25,20 @@ It should be run over a DataFrame that is final on naming column
 
 class TransformCustomerGenderFormat(DataTransformer):
     def run(self,df:DataFrame, config:Optional[dict]) -> DataFrame:
-        if'gender' in df.columns:
+        print("Gend transformation initiated")
+        if 'gender' in df.columns:
             df= df.withColumn("enr_gender",
                                  when(col('gender') == 1,"Male")
                                  .when(col('gender') == 2,'Female')
                                  .otherwise('Unknown'))
         else:
             df= df.withColumn("enr_gender",lit("Unknown"))
-        df.drop('gender')
+        df=df.drop('gender')
         return df
     
 class TransformCustomerTypeFormat(DataTransformer):
     def run(self,df:DataFrame, config:Optional[dict]) -> DataFrame:
+        print("Customer type transformation initiated")
         if'user_type' in df.columns:
             return df.withColumn("customer_type",
                                  when(df['user_type'] == 'Subscriber',"Member")
@@ -46,8 +49,11 @@ class TransformCustomerTypeFormat(DataTransformer):
 
 class AddColumnDiffTime(DataTransformer):
     def run(self,df:DataFrame,config:Optional[dict]) -> DataFrame:
+        print("Duration calculation initiated")
         return df.withColumn(config['column_result'],
-                             when(col(config['column_result']) == None , datediff(col(config['column_greather']),col(config['colmun_lesser'])))
+                             when(col(config['column_result']).isNull(),\
+                                   col(config['column_greather']).cast('long') - col(config['colmun_lesser']).cast('long'))
+                             .otherwise(col(config['column_result']))
                              )
     
 class AddColumnIDs(DataTransformer):
@@ -58,13 +64,12 @@ class AddColumnIDs(DataTransformer):
 
 class AddRideType(DataTransformer):
     def run(self,df:DataFrame,config:Optional[dict]) -> DataFrame:
-        # print(df.columns)
-        if 'rideable_type' not in df.columns :
-            return df.withColumn('rideable_type',lit('classic_bike'))
-        return df
+        print('Ride type add column initiate')
+        return df.withColumn('rideable_type',when(col('rideable_type').isNull(), lit('classic_bike')).otherwise(col('rideable_type')))
 
 class  AddDimensionsForTimes(DataTransformer):
     def run(self,df:DataFrame,config:Optional[dict]):
+        print("Dimensions time column add initiated")
         return df.withColumn('year', year(config['datetime_column'])) \
              .withColumn('month', month(config['datetime_column'])) \
              .withColumn('quarter', quarter(config['datetime_column'])) \
@@ -76,18 +81,32 @@ class  AddDimensionsForTimes(DataTransformer):
         # return df
 class AddColumnWithLiteralValue(DataTransformer):
     def run(self,df:DataFrame,config:Optional[dict]):
-        print(config['column_to_add']['column_name'])
-        print(config['column_to_add']['column_value'])
+        print("Column With value literal initiated")
         df = df.withColumn(config['column_to_add']['column_name'],lit(config['column_to_add']['column_value']))
-        # df = df.withColumn('dw_period_tag',lit('2013'))
-        df.show()
         return df
+    
+class CastToDatamodel(DataTransformer):
+    def run(self,df:DataFrame,config:Optional[dict]):
+        print("Cast To Datamodel initiated")
+        data_model_from_df = list(dict(df.dtypes).keys())
 
-# class EnrichWithDistance(DataTransformer):
-#     def run(self,df:DataFrame,config:Optional[dict]) -> DataFrame :
-#         df = df.withColumn('TRIP_DISTANCE', \
-#                             get_distnace((df.START_STATION_LATITUDE,df.START_STATION_LONGITUDE),(df.END_STATION_LATITUDE,df.END_STATION_LONGITUDE)))
-#         return df
+        filtered_column = list(filter( lambda x: x not in data_model_from_df ,config['schema'].names ))
+        if len(filtered_column) > 0 :
+            for column in filtered_column:
+                df =  df.withColumn(column, lit(None))
+
+        df = df.select([
+            col(field.name).cast(field.dataType).alias(field.name) 
+            for field in config['schema'].fields
+        ])
+        return df
+    
+class AddUuidToColumnID(DataTransformer):
+    def run(self,df:DataFrame,config:Optional[dict]):
+        print(f"Add uuid in to th column: {config['column_id']}")
+        return df.withColumn(config['column_id'],lit(str(uuid.uuid4())))
+
+
 
 class FactoryDataTransformer(Enum):
     RENAME_COLUMNS='rename_column'
@@ -99,6 +118,8 @@ class FactoryDataTransformer(Enum):
     ADD_COLUMN_IDS='add_column_ids'
     ADD_DIMENSIONS_TIME='add_column_time'
     ADD_COLUMN_WITH_LITERAL_VALUE='add_column_with_literal_value'
+    CAST_TO_DATAMODEL='cast_to_datamodel'
+    AddUuidToColumnID='add_uuid_to_column_id'
     
     @property
     def get_data_tranformer(self)->DataTransformer:
@@ -111,7 +132,9 @@ class FactoryDataTransformer(Enum):
             self.ADD_COLUMN_IDS : AddColumnIDs(),
             self.TRANSFORM_CUSTOMER_COLUMN:TransformCustomerTypeFormat(),
             self.ADD_DIMENSIONS_TIME:AddDimensionsForTimes(),
-            self.ADD_COLUMN_WITH_LITERAL_VALUE:AddColumnWithLiteralValue()
+            self.ADD_COLUMN_WITH_LITERAL_VALUE:AddColumnWithLiteralValue(),
+            self.CAST_TO_DATAMODEL:CastToDatamodel(),
+            self.AddUuidToColumnID:AddUuidToColumnID()
         }[self]
 
 class DataTransformerObject(BaseModel):

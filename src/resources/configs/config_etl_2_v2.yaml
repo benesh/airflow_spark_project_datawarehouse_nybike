@@ -3,7 +3,8 @@ source:
   user: admin
   password: your-password
   driver: org.postgresql.Driver
-  query: select * from bronze.trip_data_nybike where dw_period_tag='{}'
+  # table: dw_nybike.bronze.trip_data_nybike
+  query: select * from {} where dw_period_tag='{}'
   reader: database_query
 
 target:

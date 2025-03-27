@@ -30,7 +30,7 @@ def run(spark:SparkSession,data_to_process:Data_To_Process,config:dict):
         catalog_transformer = [
             DataTransformerObject(
                 transformer= FactoryDataTransformer.ADD_COLUMN_DIFF_TIME,
-                config= config['etl_conf']['diff_column']
+                config=config['etl_conf']['diff_column']
             ),
             DataTransformerObject(
                 transformer= FactoryDataTransformer.GENDER_TRANSFORMER_OR_ADD,
@@ -47,14 +47,19 @@ def run(spark:SparkSession,data_to_process:Data_To_Process,config:dict):
             DataTransformerObject(
                 transformer=FactoryDataTransformer.ADD_BIKE_TYPE,
                 config={}
+            ),
+            DataTransformerObject(
+                transformer=FactoryDataTransformer.AddUuidToColumnID,
+                config=config['etl_conf']
             )
         ]
 
-        df = FactoryReader().getDataframe(spark,config['source'])
-        df = runner_transformer_data(catalog_transformer,df).cache()
+        # group_size = 7
+        # for i in range(0,len())
 
+        df = FactoryReader().getDataframe(spark,config['source']).cached()
+        df = runner_transformer_data(catalog_transformer,df)
         df = df.to(sylver_schema_ny_bike)
-        df.show()
         FactorySinkData().run(df,config['target'])
         
         # Step 3: Capture end time and update metadata
@@ -90,11 +95,16 @@ def run(spark:SparkSession,data_to_process:Data_To_Process,config:dict):
 
 if __name__ == "__main__":
 
+    # spark = SparkSession.builder \
+    #     .appName("spark-etl_nybike_bronze") \
+    #         .getOrCreate()
+    
     spark = SparkSession.builder \
-        .appName("spark-etl_nybike_bronze") \
-            .getOrCreate()
+    .appName("spark-etl_nybike_sylver") \
+        .getOrCreate()
+
     # path_file='/opt/airflow/resources/configs/config_etl_2_v2.yaml'
-    path_file=SparkFiles.get("config_etl_2_v2.yaml")
+    path_file=SparkFiles.get("config_etl_2_v2_iceberg.yaml")
     config = config_reader(path=path_file)
     # result = get_data_to_process("TO_SYLVER_LAYER")
     result = get_data_to_process("FAILURE_TO_SYLVER_LAYER")

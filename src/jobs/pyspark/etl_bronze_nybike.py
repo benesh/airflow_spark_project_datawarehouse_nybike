@@ -4,7 +4,7 @@ from concurrent.futures import ThreadPoolExecutor
 from transformers import runner_transformer_data,DataTransformerObject,FactoryDataTransformer
 from readers import FactoryReader
 from sinkersType import FactorySinkData
-from helpers_utils import config_reader
+from helpers_utils import config_reader,list_files_with_format
 from datetime import datetime
 from etl_metadata import ETL_Metadata,log_etl_metadata,get_data_to_process,Data_To_Process,update_data_to_porcess
 from model_data import bronze_schema_ny_bike
@@ -24,6 +24,7 @@ def run(spark:SparkSession,data_to_process:Data_To_Process,config:dict):
             month=data_to_process.month,
             data_to_process_id_fk=data_to_process.id
         )
+
         log_etl_metadata(metadata)  # Log initial metadata
         
         catalog_transformer = [
@@ -34,15 +35,24 @@ def run(spark:SparkSession,data_to_process:Data_To_Process,config:dict):
             DataTransformerObject(
                 transformer= FactoryDataTransformer.ADD_COLUMN_WITH_LITERAL_VALUE,
                 config = config['etl_conf']
+            ),
+            DataTransformerObject(
+                transformer= FactoryDataTransformer.CAST_TO_DATAMODEL,
+                config = config['etl_conf']
             )
         ]
-
-        df = FactoryReader().getDataframe(spark,config['source'])
-        df = runner_transformer_data(catalog_transformer,df)
-
-        df = df.to(bronze_schema_ny_bike)
-        
-        FactorySinkData().run(df,config['target'])
+        groupe_files = 10
+        list_files = list_files_with_format(directory=f"{config['source']['root_path']}/{config['source']['path_csv']}", format_file=".csv")
+        for i in range(0,len(list_files),groupe_files):
+            sub_list_files = list_files[i:i + groupe_files]
+            config['source']['list_csv']=sub_list_files
+            # reead the files
+            df = FactoryReader().getDataframe(spark,config['source'])
+            #transforms files
+            df = runner_transformer_data(catalog_transformer,df)
+            # write files
+            df = df.to(bronze_schema_ny_bike)
+            FactorySinkData().run(df,config['target'])
         
         # Step 3: Capture end time and update metadata
         end_time = datetime.now()
@@ -80,10 +90,11 @@ if __name__ == "__main__":
         .appName("spark-etl_nybike_bronze") \
             .getOrCreate()
     # path_file='/opt/airflow/resources/configs/config_etl_1_v2.yaml'
-    path_file=SparkFiles.get("config_etl_1_v2.yaml")
+    path_file=SparkFiles.get("config_etl_1_v2_iceberg.yaml")
     config = config_reader(path=path_file)
-    # result = get_data_to_process("FAILURE_TO_BRONZE_LAYER")
-    result = get_data_to_process("TO_BRONZE_LAYER")
+    result = get_data_to_process("FAILURE_TO_BRONZE_LAYER")
+    # result = get_data_to_process("TO_BRONZE_LAYER")
+
     # for data_to_process in result:
     #     config['source']['path_csv'] = data_to_process.path_csv
     #     config['source']['month'] = data_to_process.month
@@ -101,12 +112,6 @@ if __name__ == "__main__":
     # config['source']['process_period'] = data_to_process.process_period
 
     config['etl_conf']['column_to_add']['column_value'] =data_to_process.period_tag
-    run(spark,data_to_process = data_to_process,config = config)
+    config['etl_conf']['schema'] = bronze_schema_ny_bike
 
-
-
-
-
-
-
-
+    run(spark,data_to_process = data_to_process , config = config)

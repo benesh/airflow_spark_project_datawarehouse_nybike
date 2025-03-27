@@ -84,6 +84,7 @@ CREATE TABLE process_report.etl_metadata (
 
 CREATE TABLE bronze.trip_data_nybike(
     dw_period_tag VARCHAR(50),
+    ride_id VARCHAR,
 	start_station_id VARCHAR,
 	start_station_name VARCHAR(4000),
 	start_station_latitude DOUBLE PRECISION,
@@ -92,10 +93,10 @@ CREATE TABLE bronze.trip_data_nybike(
 	end_station_name VARCHAR(1000),
 	end_station_latitude DOUBLE PRECISION,
 	end_station_longitude DOUBLE PRECISION,
-	bike_id INTEGER,
 	user_type VARCHAR(255),
     gender VARCHAR(255),
 	customer_year_birth VARCHAR(255),
+    bike_id INTEGER,
 	rideable_type VARCHAR(255),
 	start_at TIMESTAMP,
 	stop_at TIMESTAMP,
@@ -132,6 +133,8 @@ CREATE TABLE sylver.trip_data_nybike(
     weekday INTEGER,
     weekday_name VARCHAR(255)
     )
+
+
 
 
 

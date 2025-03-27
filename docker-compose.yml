@@ -292,74 +292,6 @@ services:
       airflow-init:
         condition: service_completed_successfully
 
-  
-  spark-master:
-    # image: docker.io/bitnami/spark:3.5
-    build: ./base_images_services/spark_base
-    container_name: spark-master
-    command: bin/spark-class org.apache.spark.deploy.master.Master
-    environment:
-      - SPARK_MODE=master
-      - SPARK_RPC_AUTHENTICATION_ENABLED=no
-      - SPARK_RPC_ENCRYPTION_ENABLED=no
-      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
-      - SPARK_SSL_ENABLED=no
-      - SPARK_USER=spark
-      - SPARK_LOG_DIR=/opt/bitnami/spark/logs
-    ports:
-      - '8085:8080'
-      - '7077:7077'
-    volumes:
-      - ./notebooks:/opt/airflow/include/notebooks
-      - ./volumes_and_data_services/data_nybike:/opt/airflow/include
-      - ./src:/opt/airflow
-      - ./volumes_and_data_services/spark_home/master_logs:/opt/bitnami/spark/logs
-    networks:
-      - data_ny_bike_net
-
-
-  spark-worker:
-    build: ./base_images_services/spark_base
-    container_name: spark-worker-1
-    depends_on:
-      - spark-master
-    command: bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
-    environment:
-      - SPARK_MODE=worker
-      - SPARK_MASTER_URL=spark://spark-master:7077
-      - SPARK_WORKER_MEMORY=1G
-      - SPARK_WORKER_CORES=1
-      - SPARK_RPC_AUTHENTICATION_ENABLED=no
-      - SPARK_RPC_ENCRYPTION_ENABLED=no
-      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
-      - SPARK_SSL_ENABLED=no
-      - SPARK_USER=spark
-      - SPARK_LOG_DIR=/opt/bitnami/spark/logs
-    volumes:
-      - ./notebooks:/opt/airflow/include/notebooks
-      - ./volumes_and_data_services/data_nybike:/opt/airflow/include
-      - ./src:/opt/airflow
-      - ./volumes_and_data_services/spark_home/worker_logs:/opt/bitnami/spark/logs
-
-    networks:
-      - data_ny_bike_net
-         
-
-  spark-jupyter:
-    build : ./base_images_services/jupyter_spark/
-    ports:
-      - 8888:8888
-      - 4040:4040
-      - 4041:4041
-    # environment:
-    #   - JUPYTERHUB_SERVICE_URL: http://localhost:8888  # Add your JupyterHub URL
-    #   - JUPYTERHUB_API_TOKEN: your-api-token-here
-    volumes:
-      - ./notebooks:/home/jovyan/work/notebooks
-      - ./volumes_and_data_services/data_nybike:/opt/airflow/include
-      - ./src/jobs:/opt/airflow/jobs
-    networks:
-      - data_ny_bike_net
 
   db:
     image: postgres:${POSTGRES_VERSION_TAG}
@@ -412,6 +344,83 @@ services:
       - ./src:/opt/airflow/jobs
     networks:
      - data_ny_bike_net
+
+  spark-iceberg:
+    image: tabulario/spark-iceberg
+    container_name: spark-iceberg
+    # build: spark/
+    networks:
+      data_ny_bike_net:
+    depends_on:
+      - rest
+      - minio
+    volumes:
+      - ./warehouse:/home/iceberg/warehouse
+      - ./notebooks:/home/iceberg/notebooks/notebooks
+      - ./src/jobs:/opt/airflow/include/jobs
+      - ./src/resources:/opt/airflow/include/resoucrces
+      - ./notebooks_test:/home/iceberg/notebooks/notebooks_test
+      - ./volumes_and_data_services/data_nybike:/opt/airflow/data
+    environment:
+      - AWS_ACCESS_KEY_ID=admin
+      - AWS_SECRET_ACCESS_KEY=password
+      - AWS_REGION=us-east-1
+    ports:
+      - 8888:8888
+      - 7077:7077
+      - 8080:8080
+      - 10000:10000
+      - 10001:10001
+
+  rest:
+    image: apache/iceberg-rest-fixture
+    container_name: iceberg-rest
+    networks:
+      data_ny_bike_net:
+    ports:
+      - 8181:8181
+    environment:
+      - AWS_ACCESS_KEY_ID=admin
+      - AWS_SECRET_ACCESS_KEY=password
+      - AWS_REGION=us-east-1
+      - CATALOG_WAREHOUSE=s3://warehouse/
+      - CATALOG_IO__IMPL=org.apache.iceberg.aws.s3.S3FileIO
+      - CATALOG_S3_ENDPOINT=http://minio:9000
+  minio:
+    image: minio/minio
+    container_name: minio
+    environment:
+      - MINIO_ROOT_USER=admin
+      - MINIO_ROOT_PASSWORD=password
+      - MINIO_DOMAIN=minio
+    networks:
+      data_ny_bike_net:
+        aliases:
+          - warehouse.minio
+    ports:
+      - 9001:9001
+      - 9000:9000
+    command: ["server", "/data", "--console-address", ":9001"]
+  mc:
+    depends_on:
+      - minio
+    image: minio/mc
+    container_name: mc
+    networks:
+      data_ny_bike_net:
+    environment:
+      - AWS_ACCESS_KEY_ID=admin
+      - AWS_SECRET_ACCESS_KEY=password
+      - AWS_REGION=us-east-1
+    entrypoint: |
+      /bin/sh -c "
+      until (/usr/bin/mc config host add minio http://minio:9000 admin password) do echo '...waiting...' && sleep 1; done;
+      /usr/bin/mc rm -r --force minio/warehouse;
+      /usr/bin/mc mb minio/warehouse;
+      /usr/bin/mc policy set public minio/warehouse;
+      tail -f /dev/null
+      "
+
 
 networks:
   data_ny_bike_net:
