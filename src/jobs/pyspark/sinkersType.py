@@ -7,19 +7,20 @@ class SinkDataToIceberg(SinkData):
     def run(self,df:DataFrame, config:Optional[dict]):
         print("Sink data to Iceberg")
         # try:
-        df.write.saveAsTable(name=config['dbtable'],mode = config['mode'],partition='dw_period_tag')
+        df.write.saveAsTable(name=config['dbtable']
+                             ,mode = config['mode']
+                             ,partition=config['dw_period_tag']
+                             )
         # except Exception as e:
         #     print(f"Error writing to {config['iceberg_table_name']}: {e}")
 class SinkDataToParquetDirectory(SinkData):
     def run(self,df:DataFrame, config:Optional[dict]):
         print("Sink data to Iceberg")
-        # try:
+
         df.write\
             .partitionBy(config['column_partition'])\
                 .mode(config['mode']).format("parquet")\
                     .save(path=config['path'])
-        # except Exception as e:
-        #     print(f"Error writing to {config['iceberg_table_name']}: {e}")
 
 class SinkDataToDatabase(SinkData):
     def run(self,df:DataFrame, config:Optional[dict]):

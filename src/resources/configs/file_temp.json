@@ -1,0 +1,189 @@
+{
+    "ts": "2025-04-04T16:55:32.792Z",
+    "level": "WARN",
+    "msg": "Cannot use org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions to configure session extensions.",
+    "context": {
+        "class_name": "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions"
+    },
+    "exception": {
+        "class": "java.lang.ClassNotFoundException",
+        "msg": "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions",
+        "stacktrace": [
+            {
+                "class": "java.net.URLClassLoader",
+                "method": "findClass",
+                "file": "URLClassLoader.java",
+                "line": 445
+            },
+            {
+                "class": "java.lang.ClassLoader",
+                "method": "loadClass",
+                "file": "ClassLoader.java",
+                "line": 592
+            },
+            {
+                "class": "java.lang.ClassLoader",
+                "method": "loadClass",
+                "file": "ClassLoader.java",
+                "line": 525
+            },
+            {
+                "class": "java.lang.Class",
+                "method": "forName0",
+                "file": "Class.java",
+                "line": -2
+            },
+            {
+                "class": "java.lang.Class",
+                "method": "forName",
+                "file": "Class.java",
+                "line": 467
+            },
+            {
+                "class": "org.apache.spark.util.SparkClassUtils",
+                "method": "classForName",
+                "file": "SparkClassUtils.scala",
+                "line": 41
+            },
+            {
+                "class": "org.apache.spark.util.SparkClassUtils",
+                "method": "classForName$",
+                "file": "SparkClassUtils.scala",
+                "line": 36
+            },
+            {
+                "class": "org.apache.spark.util.Utils$",
+                "method": "classForName",
+                "file": "Utils.scala",
+                "line": 99
+            },
+            {
+                "class": "org.apache.spark.sql.SparkSession$",
+                "method": "$anonfun$applyExtensions$2",
+                "file": "SparkSession.scala",
+                "line": 1241
+            },
+            {
+                "class": "org.apache.spark.sql.SparkSession$",
+                "method": "$anonfun$applyExtensions$2$adapted",
+                "file": "SparkSession.scala",
+                "line": 1239
+            },
+            {
+                "class": "scala.collection.IterableOnceOps",
+                "method": "foreach",
+                "file": "IterableOnce.scala",
+                "line": 619
+            },
+            {
+                "class": "scala.collection.IterableOnceOps",
+                "method": "foreach$",
+                "file": "IterableOnce.scala",
+                "line": 617
+            },
+            {
+                "class": "scala.collection.AbstractIterable",
+                "method": "foreach",
+                "file": "Iterable.scala",
+                "line": 935
+            },
+            {
+                "class": "org.apache.spark.sql.SparkSession$",
+                "method": "org$apache$spark$sql$SparkSession$$applyExtensions",
+                "file": "SparkSession.scala",
+                "line": 1239
+            },
+            {
+                "class": "org.apache.spark.sql.SparkSession$",
+                "method": "applyAndLoadExtensions",
+                "file": "SparkSession.scala",
+                "line": 1223
+            },
+            {
+                "class": "org.apache.spark.sql.SparkSession",
+                "method": "<init>",
+                "file": "SparkSession.scala",
+                "line": 110
+            },
+            {
+                "class": "jdk.internal.reflect.NativeConstructorAccessorImpl",
+                "method": "newInstance0",
+                "file": "NativeConstructorAccessorImpl.java",
+                "line": -2
+            },
+            {
+                "class": "jdk.internal.reflect.NativeConstructorAccessorImpl",
+                "method": "newInstance",
+                "file": "NativeConstructorAccessorImpl.java",
+                "line": 77
+            },
+            {
+                "class": "jdk.internal.reflect.DelegatingConstructorAccessorImpl",
+                "method": "newInstance",
+                "file": "DelegatingConstructorAccessorImpl.java",
+                "line": 45
+            },
+            {
+                "class": "java.lang.reflect.Constructor",
+                "method": "newInstanceWithCaller",
+                "file": "Constructor.java",
+                "line": 500
+            },
+            {
+                "class": "java.lang.reflect.Constructor",
+                "method": "newInstance",
+                "file": "Constructor.java",
+                "line": 481
+            },
+            {
+                "class": "py4j.reflection.MethodInvoker",
+                "method": "invoke",
+                "file": "MethodInvoker.java",
+                "line": 247
+            },
+            {
+                "class": "py4j.reflection.ReflectionEngine",
+                "method": "invoke",
+                "file": "ReflectionEngine.java",
+                "line": 374
+            },
+            {
+                "class": "py4j.Gateway",
+                "method": "invoke",
+                "file": "Gateway.java",
+                "line": 238
+            },
+            {
+                "class": "py4j.commands.ConstructorCommand",
+                "method": "invokeConstructor",
+                "file": "ConstructorCommand.java",
+                "line": 80
+            },
+            {
+                "class": "py4j.commands.ConstructorCommand",
+                "method": "execute",
+                "file": "ConstructorCommand.java",
+                "line": 69
+            },
+            {
+                "class": "py4j.ClientServerConnection",
+                "method": "waitForCommands",
+                "file": "ClientServerConnection.java",
+                "line": 182
+            },
+            {
+                "class": "py4j.ClientServerConnection",
+                "method": "run",
+                "file": "ClientServerConnection.java",
+                "line": 106
+            },
+            {
+                "class": "java.lang.Thread",
+                "method": "run",
+                "file": "Thread.java",
+                "line": 840
+            }
+        ]
+    },
+    "logger": "SparkSession"
+}

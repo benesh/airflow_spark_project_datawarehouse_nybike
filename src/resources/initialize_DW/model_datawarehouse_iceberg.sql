@@ -1,6 +1,6 @@
 /*
 	Initialisation of the database
-	differente schema  for the layer 
+	differente schema  for the layer  for Postgres
 */
 
 CREATE SCHEMA bronze;
@@ -82,26 +82,29 @@ CREATE TABLE process_report.etl_metadata (
 );
 
 
-CREATE TABLE bronze.trip_data_nybike(
-    dw_period_tag VARCHAR(50),
-    ride_id VARCHAR,
-	start_station_id VARCHAR,
-	start_station_name VARCHAR(4000),
-	start_station_latitude DOUBLE PRECISION,
-	start_station_longitude DOUBLE PRECISION,
-	end_station_id VARCHAR,
-	end_station_name VARCHAR(1000),
-	end_station_latitude DOUBLE PRECISION,
-	end_station_longitude DOUBLE PRECISION,
-	user_type VARCHAR(255),
-    gender VARCHAR(255),
-	customer_year_birth VARCHAR(255),
-    bike_id INTEGER,
-	rideable_type VARCHAR(255),
-	start_at TIMESTAMP,
-	stop_at TIMESTAMP,
-	trip_duration DOUBLE PRECISION,
-);
+CREATE TABLE bronze.DW_ny_bike.trip_data_nybike(
+    dw_period_tag string,
+    ride_id string,
+	start_station_id string,
+	start_station_name string,
+	start_station_latitude string ,
+	start_station_longitude string ,
+	end_station_id string,
+	end_station_name string,
+	end_station_latitude string,
+	end_station_longitude string,
+	user_type string,
+    gender string,
+	customer_year_birth string,
+    bike_id string,
+	rideable_type string,
+	start_at string,
+	stop_at string, 
+	trip_duration string
+    )
+USING iceberg
+PARTITIONED BY (dw_period_tag)
+;
 
 --Creating an indew for the tag period 
 CREATE INDEX trip_data_tag_period ON bronze.trip_data_nybike(dw_period_tag);
@@ -164,6 +167,7 @@ CREATE TABLE dw_nybike.bronze.trip_data_nybike(
 	stop_at timestamp, 
 	trip_duration DOUBLE
     )
+USING iceberg
 PARTITIONED BY (dw_period_tag)
 ;
 

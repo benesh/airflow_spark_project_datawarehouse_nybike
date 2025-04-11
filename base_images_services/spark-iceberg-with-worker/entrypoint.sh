@@ -17,23 +17,35 @@
 # specific language governing permissions and limitations
 # under the License.
 
-if [ "$SPARK_MODE" = "MASTER" ]; then
-    start-master.sh -p 7077
-    notebook
-fi
+# if [ "$SPARK_MODE" = "MASTER" ]; then
+#     start-master.sh -p 7077
+#     notebook
+# fi
 
-if [ "$SPARK_MODE" = "WORKER" ]; then
-    start-worker.sh spark://spark-iceberg:7077
-    echo "succefully started worker"
-fi
+# if [ "$SPARK_MODE" = "WORKER" ]; then
+#     start-worker.sh spark://spark-iceberg:7077
+#     echo "succefully started worker"
+# fi
 
 # start-master.sh -p 7077
 # start-worker.sh spark://spark-iceberg:7077
 
-start-history-server.sh
-start-thriftserver.sh  --driver-java-options "-Dderby.system.home=/tmp/derby"
+# start-history-server.sh
+# start-thriftserver.sh  --driver-java-options "-Dderby.system.home=/tmp/derby"
 
 # Entrypoint, for example notebook, pyspark or spark-sql
 # if [[ $# -gt 0 ]] ; then
 #     eval "$1"
 # fi
+
+
+
+start-master.sh -p 7077
+start-worker.sh spark://spark-iceberg:7077
+start-history-server.sh
+start-thriftserver.sh  --driver-java-options "-Dderby.system.home=/tmp/derby"
+
+# Entrypoint, for example notebook, pyspark or spark-sql
+if [[ $# -gt 0 ]] ; then
+    eval "$1"
+fi

@@ -114,20 +114,20 @@ bronze_schema_ny_bike = StructType([
     StructField("ride_id", StringType(), nullable=True),
     StructField("start_station_id", StringType(), nullable=True),
     StructField("start_station_name", StringType(), nullable=True),
-    StructField("start_station_latitude", DoubleType(), nullable=True),
-    StructField("start_station_longitude", DoubleType(), nullable=True),
+    StructField("start_station_latitude", StringType(), nullable=True),
+    StructField("start_station_longitude", StringType(), nullable=True),
     StructField("end_station_id", StringType(), nullable=True),
     StructField("end_station_name", StringType(), nullable=True),
-    StructField("end_station_latitude", DoubleType(), nullable=True),
-    StructField("end_station_longitude", DoubleType(), nullable=True),
-    StructField("bike_id", IntegerType(), nullable=True),
+    StructField("end_station_latitude", StringType(), nullable=True),
+    StructField("end_station_longitude", StringType(), nullable=True),
+    StructField("bike_id", StringType(), nullable=True),
     StructField("user_type", StringType(), nullable=True),
     StructField("gender", StringType(), nullable=True),
     StructField("customer_year_birth", StringType(), nullable=True),
     StructField("rideable_type", StringType(), nullable=True),
-    StructField("start_at", TimestampType(), nullable=True),
-    StructField("stop_at", TimestampType(), nullable=True),
-    StructField("trip_duration", DoubleType(), nullable=True)
+    StructField("start_at", StringType(), nullable=True),
+    StructField("stop_at", StringType(), nullable=True),
+    StructField("trip_duration", StringType(), nullable=True)
 ])
 
 

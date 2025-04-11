@@ -6,7 +6,7 @@ class ReaderCsvFromS3Storage(Reader):
     def run(self,spark,config:dict):
         return spark.read\
             .format('csv')\
-                .options(inferSchema='True', header='True',delimiter=',')\
+                .options(header='True')\
                     .load(config['path_csv'])
 
 class ReaderCSV(Reader):
@@ -14,16 +14,14 @@ class ReaderCSV(Reader):
         print("Reading CSV initiated") 
         return spark.read\
             .format('csv')\
-                .options(inferSchema='True', header='True',delimiter=',')\
+                .options(header='True')\
                     .load(f"{config['root_path']}/{config['path_csv']}")
     
 class ReaderBulkCSV(Reader):
     def run(self,spark,config:dict)-> DataFrame:
         print("Reading CSV initiated From Path") 
-        return spark.read.csv(config['list_csv'],header=True,inferSchema=False)
-            # .format('csv')\
-            #     .options(inferSchema='True', header='True',delimiter=',')\
-            #         .load(f"{config['list_csv']}")
+        return spark.read.csv(config['list_csv'],header=True)
+
     
 class ReaderDatabaseTable(Reader):
     def run(self,spark,config:dict)-> DataFrame:

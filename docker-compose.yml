@@ -296,16 +296,16 @@ services:
   db:
     image: postgres:${POSTGRES_VERSION_TAG}
     # build: ./base_images_services/postgres
-    container_name: db
+    container_name: postgres
     networks:
       - data_ny_bike_net
     ports:
       - 5432:5432
     environment:
-      - POSTGRES_PASSWORD=${SOFTWARE_PASSWORD}
-      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=postgres
       - PGDATA=/var/lib/postgresql/data/pgdata
-      - POSTGRES_DB=postgres
+      - POSTGRES_DB=catalog
     volumes:
       - ./volumes_and_data_services/postgres_data:/var/lib/postgresql/data
      
@@ -322,69 +322,45 @@ services:
     networks:
       - data_ny_bike_net
 
-  grafana:
-    image: grafana/grafana-enterprise
-    container_name: grafana
-    restart: unless-stopped
-    ports:
-      - '3000:3000'
-    networks:
-     - data_ny_bike_net
-    environment:
-      - GF_LOG_LEVEL=debug
-    volumes:
-      - ./volumes_and_data_services/grafana_storage:/var/lib/grafana
 
   ubuntu_sys:
     build: ./base_images_services/ubuntu/
     container_name: ubuntu_sys
     volumes:
-      - ./volumes_and_data_services/notebooks:/opt/airflow/include/notebooks
-      - ./volumes_and_data_services/data_nybike:/opt/airflow/include
-      - ./src:/opt/airflow/jobs
-    networks:
-     - data_ny_bike_net
-
-  spark-iceberg:
-    image: tabulario/spark-iceberg
-    container_name: spark-iceberg
-    # build: spark/
-    networks:
-      data_ny_bike_net:
-    depends_on:
-      - rest
-      - minio
-    volumes:
-      - ./warehouse:/home/iceberg/warehouse
-      - ./notebooks:/home/iceberg/notebooks/notebooks
+      - ./notebooks_test:/workspace/notebooks_test
       - ./src/jobs:/opt/airflow/include/jobs
       - ./src/resources:/opt/airflow/include/resoucrces
-      - ./notebooks_test:/home/iceberg/notebooks/notebooks_test
       - ./volumes_and_data_services/data_nybike:/opt/airflow/data
-    environment:
-      - AWS_ACCESS_KEY_ID=admin
-      - AWS_SECRET_ACCESS_KEY=password
-      - AWS_REGION=us-east-1
+    networks:
+     - data_ny_bike_net
     ports:
       - 8888:8888
       - 7077:7077
       - 8080:8080
-      - 10000:10000
-      - 10001:10001
-  rest:
-    image: apache/iceberg-rest-fixture
-    container_name: iceberg-rest
+      - 4040:4040
+
+
+  spark_notebook:
+    image: alexmerced/spark35nb
+    ports: 
+      - 8888:8888
+      - 4040:4040
+      - 7077:7077
+      - 8080:8080
+      - 6066:6066
+      - 7078:7078
+      - 8081:8081
+      - 18080:18080
+    env_file: .env
+    container_name: notebook
+    volumes:
+      - ./notebooks_test:/workspace/notebooks_test
+      - ./src/jobs:/opt/airflow/include/jobs
+      - ./src/resources:/opt/airflow/include/resoucrces
+      - ./volumes_and_data_services/data_nybike:/opt/airflow/data
     networks:
-      data_ny_bike_net:
-    ports:
-      - 8181:8181
-    environment:
-      - AWS_ACCESS_KEY_ID=admin
-      - AWS_SECRET_ACCESS_KEY=password
-      - AWS_REGION=us-east-1
-      - CATALOG_WAREHOUSE=s3://warehouse/
-      - CATALOG_IO__IMPL=org.apache.iceberg.aws.s3.S3FileIO
-      - CATALOG_S3_ENDPOINT=http://minio:9000
+      - data_ny_bike_net
+
   minio:
     image: minio/minio
     container_name: minio
@@ -393,20 +369,19 @@ services:
       - MINIO_ROOT_PASSWORD=password
       - MINIO_DOMAIN=minio
     networks:
-      data_ny_bike_net:
-        aliases:
-          - warehouse.minio
+      - data_ny_bike_net
     ports:
       - 9001:9001
       - 9000:9000
     command: ["server", "/data", "--console-address", ":9001"]
+
   mc:
     depends_on:
       - minio
     image: minio/mc
     container_name: mc
     networks:
-      data_ny_bike_net:
+      - data_ny_bike_net
     environment:
       - AWS_ACCESS_KEY_ID=admin
       - AWS_SECRET_ACCESS_KEY=password
@@ -420,13 +395,48 @@ services:
       tail -f /dev/null
       "
   
+  nessie:
+    # IMPORTANT: when upgrading Nessie images, make sure to update the spark-sql packages as well
+    image: ghcr.io/projectnessie/nessie:0.103.2
+    container_name: nessie
+    ports:
+      # API port
+      - "19120:19120"
+      # Management port (metrics and health checks)
+      - "9005:9000"
+    environment:
+      # Version store settings.
+      # This example uses Postgres as the version store.
+      - nessie.version.store.type=JDBC
+      - nessie.version.store.persist.jdbc.datasource=postgresql
+      - quarkus.datasource.postgresql.jdbc.url=jdbc:postgresql://postgres:5432/catalog
+      - quarkus.datasource.postgresql.username=postgres
+      - quarkus.datasource.postgresql.password=postgres
+    networks:
+      - data_ny_bike_net
   
-
-
+  dremio:
+    platform: linux/x86_64
+    image: dremio/dremio-oss:latest
+    ports:
+      - 9047:9047
+      - 31010:31010
+      - 32010:32010
+    container_name: dremio
+    networks:
+      - data_ny_bike_net
+  
+  # Superset for Building BI Dashboard
+  dashboard:
+    image: alexmerced/dremio-superset
+    container_name: dashboards
+    networks:
+      - data_ny_bike_net
+    ports:
+      - 8085:8088
 
 networks:
   data_ny_bike_net:
-    driver: bridge
   
 
 volumes:

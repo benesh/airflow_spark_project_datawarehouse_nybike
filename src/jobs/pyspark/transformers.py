@@ -1,6 +1,6 @@
 from interfaces import DataTransformer
 from pyspark.sql import DataFrame
-from pyspark.sql.functions import when,col,lit,hash,datediff,xxhash64,year,quarter,dayofmonth,month,dayofweek,date_format,concat
+from pyspark.sql.functions import when,col,lit,hash,datediff,xxhash64,year,quarter,dayofmonth,month,dayofweek,date_format,concat,to_timestamp
 # from utils import get_distnace
 from enum import Enum
 from pydantic import BaseModel
@@ -44,7 +44,6 @@ class TransformCustomerTypeFormat(DataTransformer):
                                  when(df['user_type'] == 'Subscriber',"Member")
                                  .otherwise('Customer')).drop('user_type')
         return  df
-    
 
 
 class AddColumnDiffTime(DataTransformer):

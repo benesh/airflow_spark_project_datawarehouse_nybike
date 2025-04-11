@@ -35,3 +35,5 @@ def list_files_with_format(directory,format_file):
             if file.endswith(format_file):
                 list_files.append(os.path.join(root, file))
     return list_files
+
+def data_to_process(statu)

@@ -3,12 +3,20 @@ source :
   reader: ReaderBulkCSV
   root_path: /opt/airflow/data
   process_step: BRONZE_STAGE
+  group_file_to_read : 10
+  
+
+# source :
+#   reader: ReaderCSVLocal
+#   root_path: /opt/airflow/data
+#   process_step: BRONZE_STAGE
+#   pattern_csv: /*/*.csv
   
 target:
   sink: SinkDataToIceberg
-  schema: bronze
+  schema: dw_nybike
   mode : append
-  dbtable: dw_nybike.bronze.trip_data_nybike
+  dbtable:  bronze.DW_ny_bike.trip_data_nybike
 
 # target:
 #   sink: file_parquet

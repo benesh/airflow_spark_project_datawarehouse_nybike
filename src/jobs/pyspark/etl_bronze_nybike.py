@@ -1,6 +1,7 @@
+import os
+import pyspark
 from pyspark.sql import SparkSession
 from pyspark import SparkFiles
-from concurrent.futures import ThreadPoolExecutor
 from transformers import runner_transformer_data,DataTransformerObject,FactoryDataTransformer
 from readers import FactoryReader
 from sinkersType import FactorySinkData
@@ -35,13 +36,15 @@ def run(spark:SparkSession,data_to_process:Data_To_Process,config:dict):
             DataTransformerObject(
                 transformer= FactoryDataTransformer.ADD_COLUMN_WITH_LITERAL_VALUE,
                 config = config['etl_conf']
-            ),
-            DataTransformerObject(
-                transformer= FactoryDataTransformer.CAST_TO_DATAMODEL,
-                config = config['etl_conf']
             )
+            # ,
+            # DataTransformerObject(
+            #     transformer= FactoryDataTransformer.CAST_TO_DATAMODEL,
+            #     config = config['etl_conf']
+            # )
         ]
-        groupe_files = 10
+        groupe_files = config['source']['group_file_to_read']
+        rows_processed = 0
         list_files = list_files_with_format(directory=f"{config['source']['root_path']}/{config['source']['path_csv']}", format_file=".csv")
         for i in range(0,len(list_files),groupe_files):
             sub_list_files = list_files[i:i + groupe_files]
@@ -53,10 +56,22 @@ def run(spark:SparkSession,data_to_process:Data_To_Process,config:dict):
             # write files
             df = df.to(bronze_schema_ny_bike)
             FactorySinkData().run(df,config['target'])
+            rows_processed += df.count()
+
+
+        # # reead the files
+        # df = FactoryReader().getDataframe(spark,config['source'])
+        # #transforms files
+       
+        # df = runner_transformer_data(catalog_transformer,df)
+        # # write files
+        # df = df.to(bronze_schema_ny_bike)
+        
+        # FactorySinkData().run(df,config['target'])
         
         # Step 3: Capture end time and update metadata
         end_time = datetime.now()
-        rows_processed = df.count()
+        # rows_processed = df.count()
         duration = end_time - start_time
         metadata.end_time = end_time
         metadata.duration = duration
@@ -85,10 +100,11 @@ def run(spark:SparkSession,data_to_process:Data_To_Process,config:dict):
         print(f"ETL process failed: {e}")
 
 if __name__ == "__main__":
-
+    
     spark = SparkSession.builder \
         .appName("spark-etl_nybike_bronze") \
             .getOrCreate()
+    
     # path_file='/opt/airflow/resources/configs/config_etl_1_v2.yaml'
     path_file=SparkFiles.get("config_etl_1_v2_iceberg.yaml")
     config = config_reader(path=path_file)
@@ -113,5 +129,6 @@ if __name__ == "__main__":
 
     config['etl_conf']['column_to_add']['column_value'] =data_to_process.period_tag
     config['etl_conf']['schema'] = bronze_schema_ny_bike
+    config['target']['dw_period_tag'] = bronze_schema_ny_bike
 
     run(spark,data_to_process = data_to_process , config = config)

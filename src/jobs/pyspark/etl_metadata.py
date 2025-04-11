@@ -5,9 +5,9 @@ from typing import Optional
 import os
 
 # Database connection details
-PG_USER = "admin"
-PG_PASSWORD = "your-password"
-PG_HOST = "db"  # Replace with your host
+PG_USER = "postgres"
+PG_PASSWORD = "postgres"
+PG_HOST = "postgres"  # Replace with your host
 PG_PORT = "5432"       # Default PostgreSQL port
 PG_DATABASE = "postgres"
 
