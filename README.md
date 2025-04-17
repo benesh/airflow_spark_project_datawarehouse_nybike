@@ -64,6 +64,30 @@ spark-submit --files ../../resoucrces/configs/config_etl_1_v2_iceberg.yaml --py-
 
 etl sylver :
 
+spark-submit \
+--packages "org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.5.0,org.projectnessie.nessie-integrations:nessie-spark-extensions-3.5_2.12:0.102.5,software.amazon.awssdk:bundle:2.20.131,software.amazon.awssdk:url-connection-client:2.20.131" \
+--conf "spark.sql.extensions=org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions,org.projectnessie.spark.extensions.NessieSparkSessionExtensions" \
+--conf "spark.sql.catalog.bronze=org.apache.iceberg.spark.SparkCatalog" \
+--conf "spark.sql.catalog.bronze.uri=$NESSIE_URI" \
+--conf "spark.sql.catalog.bronze.ref=main" \
+--conf "spark.sql.catalog.bronze.authentication.type=NONE" \
+--conf "spark.sql.catalog.bronze.catalog-impl=org.apache.iceberg.nessie.NessieCatalog" \
+--conf "spark.sql.catalog.bronze.s3.path-style-access=true" \
+--conf "spark.sql.catalog.bronze.s3.endpoint=$AWS_S3_ENDPOINT" \
+--conf "spark.sql.catalog.bronze.warehouse=$WAREHOUSE" \
+--conf "spark.sql.catalog.bronze.io-impl=org.apache.iceberg.aws.s3.S3FileIO" \
+--conf "spark.hadoop.fs.s3a.access.key=$AWS_ACCESS_KEY_ID" \
+--conf "spark.hadoop.fs.s3a.secret.key=$AWS_SECRET_ACCESS_KEY" \
+--conf "spark.hadoop.fs.s3a.path.style.access=true" \
+--conf "spark.hadoop.fs.s3a.impl=org.apache.hadoop.fs.s3a.S3AFileSystem" \
+--executor-memory 8g \
+--driver-memory 8g \
+--files ../../resoucrces/configs/config_etl_2_v2_iceberg.yaml --py-files interfaces.py,readers.py,sinkersType.py,etl_metadata.py,helpers_utils.py,transformers.py etl_sylver_nybike.py
+
+
+
+spark-submit --packages "org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.5.0,org.projectnessie.nessie-integrations:nessie-spark-extensions-3.5_2.12:0.102.5,software.amazon.awssdk:bundle:2.20.131,software.amazon.awssdk:url-connection-client:2.20.131" --conf "spark.sql.extensions=org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions,org.projectnessie.spark.extensions.NessieSparkSessionExtensions" --conf "spark.sql.catalog.bronze=org.apache.iceberg.spark.SparkCatalog" --conf "spark.sql.catalog.bronze.uri=$NESSIE_URI" --conf "spark.sql.catalog.bronze.ref=main" --conf "spark.sql.catalog.bronze.authentication.type=NONE" --conf "spark.sql.catalog.bronze.catalog-impl=org.apache.iceberg.nessie.NessieCatalog" --conf "spark.sql.catalog.bronze.s3.path-style-access=true" --conf "spark.sql.catalog.bronze.s3.endpoint=$AWS_S3_ENDPOINT" --conf "spark.sql.catalog.bronze.warehouse=$WAREHOUSE" --conf "spark.sql.catalog.bronze.io-impl=org.apache.iceberg.aws.s3.S3FileIO" --conf "spark.hadoop.fs.s3a.access.key=$AWS_ACCESS_KEY_ID" --conf "spark.hadoop.fs.s3a.secret.key=$AWS_SECRET_ACCESS_KEY" --conf "spark.hadoop.fs.s3a.path.style.access=true" --conf "spark.hadoop.fs.s3a.impl=org.apache.hadoop.fs.s3a.S3AFileSystem" --executor-memory 8g --driver-memory 8g --files ../../resoucrces/configs/config_etl_2_v2_iceberg.yaml --py-files interfaces.py,readers.py,sinkersType.py,etl_metadata.py,helpers_utils.py,transformers.py etl_sylver_nybike.py
+
 spark-submit --files ../../resources/configs/config_etl_2_v2.yaml --py-files interfaces.py,readers.py,sinkersType.py,etl_metadata.py,helpers_utils.py,transformers.py etl_sylver_nybike.py
 
 spark-submit --files ../../resources/configs/config_etl_2_v2_iceberg.yaml --py-files interfaces.py,readers.py,sinkersType.py,etl_metadata.py,helpers_utils.py,transformers.py etl_sylver_nybike.py
@@ -73,3 +97,8 @@ spark submit version 2 with packages
 
 
     # build: ./base_images_services/spark_notebook
+
+
+
+dremio+flight://benesh:3R!3peyVL8QHY@dremio:32010/?UseEncyption=false
+dremio+flight://benesh:3R!3peyVL8QHY@dashboards:32010/?UseEncyption=false

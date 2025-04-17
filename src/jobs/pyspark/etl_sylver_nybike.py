@@ -1,7 +1,7 @@
 import traceback
 from pyspark.sql import SparkSession
 from pyspark import SparkFiles
-from concurrent.futures import ThreadPoolExecutor
+# from concurrent.futures import ThreadPoolExecutor
 from transformers import runner_transformer_data,DataTransformerObject,FactoryDataTransformer
 from readers import FactoryReader
 from sinkersType import FactorySinkData
@@ -29,12 +29,20 @@ def run(spark:SparkSession,data_to_process:Data_To_Process,config:dict):
         
         catalog_transformer = [
             DataTransformerObject(
+                transformer= FactoryDataTransformer.CASTTOTIMESTAMP,
+                config=config['etl_conf']
+            ),
+            DataTransformerObject(
+                transformer= FactoryDataTransformer.CAST_TO_DATAMODEL,
+                config=config['etl_conf']
+            ),
+            DataTransformerObject(
                 transformer= FactoryDataTransformer.ADD_COLUMN_DIFF_TIME,
                 config=config['etl_conf']['diff_column']
             ),
             DataTransformerObject(
                 transformer= FactoryDataTransformer.GENDER_TRANSFORMER_OR_ADD,
-                config= {}
+                config={}
             ),
             DataTransformerObject(
                 transformer= FactoryDataTransformer.TRANSFORM_CUSTOMER_COLUMN,
@@ -49,7 +57,7 @@ def run(spark:SparkSession,data_to_process:Data_To_Process,config:dict):
                 config={}
             ),
             DataTransformerObject(
-                transformer=FactoryDataTransformer.AddUuidToColumnID,
+                transformer=FactoryDataTransformer.ADDUUIDTOCOLUMNID,
                 config=config['etl_conf']
             )
         ]
@@ -57,9 +65,12 @@ def run(spark:SparkSession,data_to_process:Data_To_Process,config:dict):
         # group_size = 7
         # for i in range(0,len())
 
-        df = FactoryReader().getDataframe(spark,config['source']).cached()
+        df = FactoryReader().getDataframe(spark,config['source'])
         df = runner_transformer_data(catalog_transformer,df)
         df = df.to(sylver_schema_ny_bike)
+        # df.show(12)
+        # df.printSchema()
+
         FactorySinkData().run(df,config['target'])
         
         # Step 3: Capture end time and update metadata
@@ -95,19 +106,20 @@ def run(spark:SparkSession,data_to_process:Data_To_Process,config:dict):
 
 if __name__ == "__main__":
 
-    # spark = SparkSession.builder \
-    #     .appName("spark-etl_nybike_bronze") \
-    #         .getOrCreate()
-    
     spark = SparkSession.builder \
     .appName("spark-etl_nybike_sylver") \
+        .config("spark.dynamicAllocation.enabled", "true") \
+        .config("spark.shuffle.service.enabled", "true") \
+        .config("spark.dynamicAllocation.minExecutors", "2") \
+        .config("spark.dynamicAllocation.maxExecutors", "10") \
+        .config("spark.sql.parquet.enableVectorizedReader", "false") \
         .getOrCreate()
 
     # path_file='/opt/airflow/resources/configs/config_etl_2_v2.yaml'
     path_file=SparkFiles.get("config_etl_2_v2_iceberg.yaml")
     config = config_reader(path=path_file)
-    # result = get_data_to_process("TO_SYLVER_LAYER")
-    result = get_data_to_process("FAILURE_TO_SYLVER_LAYER")
+    result = get_data_to_process("TO_SYLVER_LAYER")
+    # result = get_data_to_process("FAILURE_TO_SYLVER_LAYER")
 
     # for data_to_process in result:
     #     config['source']['path_csv'] = data_to_process.path_csv
@@ -120,6 +132,7 @@ if __name__ == "__main__":
     data_to_process = result[0]
     
     config['source']['dw_period_tag'] = data_to_process.period_tag 
+    config['etl_conf']['schema'] = sylver_schema_ny_bike 
     run(spark,data_to_process = data_to_process,config = config)
 
 

@@ -415,6 +415,19 @@ services:
     networks:
       - data_ny_bike_net
   
+  nesssie_cli:
+    image: ghcr.io/projectnessie/nessie-cli:0.103.3
+    environment:
+      - NESSIE_SERVER=http://nessie:19120/api/v2
+    entrypoint: |
+      /bin/sh -c "
+      until (/usr/bin/mc config host add minio http://minio:9000 admin password) do echo '...waiting...' && sleep 1; done;
+      /usr/bin/mc rm -r --force minio/warehouse;
+      /usr/bin/mc mb minio/warehouse;
+      /usr/bin/mc policy set public minio/warehouse;
+      tail -f /dev/null
+      "
+  
   dremio:
     platform: linux/x86_64
     image: dremio/dremio-oss:latest

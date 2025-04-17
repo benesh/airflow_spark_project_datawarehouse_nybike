@@ -173,32 +173,36 @@ PARTITIONED BY (dw_period_tag)
 
 -- sylver database 
 
-CREATE TABLE dw_nybike.sylver.trip_data_nybike(
+CREATE TABLE bronze.SylverDw_nybike.trip_data_nybike(
     trip_uuid string,
     dw_period_tag string,
 	start_station_id string,
 	start_station_name string,
-	start_station_latitude double,
-	start_station_longitude double,
+	start_station_latitude string,
+	start_station_longitude string,
 	end_station_id string,
 	end_station_name string,
-	end_station_latitude double,
-	end_station_longitude double,
+	end_station_latitude string,
+	end_station_longitude string,
 	bike_id string,
-    customer_type string,
+	user_type string,
+    enr_user_type string,
     enr_gender string,
 	customer_year_birth  string,
 	rideable_type string,
 	start_at timestamp,
 	stop_at timestamp,
 	trip_duration double,
-    quarter int,
+    year integer,
+    quarter integer,
     quarter_name string,
-    month int,
+    month integer,
     month_name string,
-    day int,
-    weekday int,
+    day integer,
+    weekday integer,
     weekday_name string
     )
+USING iceberg
 PARTITIONED BY (dw_period_tag)
     ;
+
