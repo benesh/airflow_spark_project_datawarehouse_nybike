@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 # syntax=docker/dockerfile:1
-FROM 3.13.2-bullseye
+FROM python:3.13.2-bullseye
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \

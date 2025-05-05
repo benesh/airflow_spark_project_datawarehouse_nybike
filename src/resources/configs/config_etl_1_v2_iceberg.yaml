@@ -12,11 +12,13 @@ source :
 #   process_step: BRONZE_STAGE
 #   pattern_csv: /*/*.csv
   
+
 target:
   sink: SinkDataToIceberg
   schema: dw_nybike
   mode : append
   dbtable:  bronze.DW_ny_bike.trip_data_nybike
+
 
 # target:
 #   sink: file_parquet
@@ -67,6 +69,7 @@ etl_conf:
     Birth Year: customer_year_birth
     Gender: gender
 
+
   data_model:
     dw_period_tag: string
     ride_id: string
@@ -87,9 +90,11 @@ etl_conf:
     stop_at: timestamp
     trip_duration: double
 
+
   column_to_add:
     column_name: dw_period_tag
     column_value: to_determine
+
 
   column_to_cast:
     timstamp: ['start_at','stop_at']

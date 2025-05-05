@@ -100,5 +100,16 @@ spark submit version 2 with packages
 
 
 
-dremio+flight://benesh:3R!3peyVL8QHY@dremio:32010/?UseEncyption=false
+dremio+flight://benesh:3R!3peyVL8QHY@dremio:32010/?UseEncryption=false
 dremio+flight://benesh:3R!3peyVL8QHY@dashboards:32010/?UseEncyption=false
+
+
+
+
+
+
+  # entrypoint: |
+    #   /bin/sh -c "
+    #   CONNECT TO http://127.0.0.1:19120/api/v2
+      
+    #   "

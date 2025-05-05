@@ -108,6 +108,7 @@ source_actual_schema_ny_bike = StructType([
 ])
 
 
+
 # Define the schema
 bronze_schema_ny_bike = StructType([
     StructField("dw_period_tag", StringType(), nullable=True),
@@ -129,6 +130,7 @@ bronze_schema_ny_bike = StructType([
     StructField("stop_at", StringType(), nullable=True),
     StructField("trip_duration", StringType(), nullable=True)
 ])
+
 
 
 sylver_schema_ny_bike = StructType([
