@@ -126,7 +126,6 @@ class CastToTimestamp(DataTransformer):
                                                 to_timestamp(col(column))
                                                            )
                                             )
-
         return df
 
 class FactoryDataTransformer(Enum):
