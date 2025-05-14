@@ -105,11 +105,12 @@ dremio+flight://benesh:3R!3peyVL8QHY@dashboards:32010/?UseEncyption=false
 
 
 
-
-
-
   # entrypoint: |
     #   /bin/sh -c "
     #   CONNECT TO http://127.0.0.1:19120/api/v2
       
     #   "
+
+
+Liens : de configuration de Nessie and Dremio 
+https://www.linkedin.com/pulse/creating-local-data-lakehouse-using-alex-merced%3FtrackingId=owFrZg3DS7Ot0LnLS6Oz7A%253D%253D/?trackingId=owFrZg3DS7Ot0LnLS6Oz7A%3D%3D

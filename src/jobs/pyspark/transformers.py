@@ -4,9 +4,28 @@ from pyspark.sql.functions import coalesce,when,col,lit,hash,datediff,xxhash64,y
 # from utils import get_distnace
 from enum import Enum
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, Callable,Any
 import uuid
 from datetime import datetime
+
+def add_or_update_column(
+    df: DataFrame, 
+    column_name: str, 
+    expression: Callable[[DataFrame], Any]
+) -> DataFrame:
+    """
+    Adds or updates a column in the DataFrame.
+
+    Args:
+        df (DataFrame): The input DataFrame.
+        column_name (str): The name of the column to add or update.
+        expression (Callable[[DataFrame], Any]): A function that returns the column expression.
+
+    Returns:
+        DataFrame: The updated DataFrame.
+    """
+    return df.withColumn(column_name, expression(df))
+
 
 class DropColumns(DataTransformer):
     def run(sefl,df:DataFrame,config:Optional[dict]) -> DataFrame:
@@ -54,19 +73,21 @@ class AddColumnDiffTime(DataTransformer):
                                   col(config['column_greather']).cast('long') - col(config['colmun_lesser']).cast('long'))
                              .otherwise(col(config['column_result']))
                              )
-    
-class AddColumnIDs(DataTransformer):
-    def run(self,df:DataFrame,config:Optional[dict]) -> DataFrame:
-        for colum_name, value in config['ids_columns'].items():
-            df = df.withColumn(value, xxhash64(*config['column_to_hash']))
-        return df
+
+# class AddRideType(DataTransformer):
+#     def run(self,df:DataFrame,config:Optional[dict]) -> DataFrame:
+#         print('Ride type add column initiate')
+#         return df.withColumn('rideable_type',when(col('rideable_type').isNull(), lit('classic_bike')).otherwise(col('rideable_type')))
 
 class AddRideType(DataTransformer):
-    def run(self,df:DataFrame,config:Optional[dict]) -> DataFrame:
-        print('Ride type add column initiate')
-        return df.withColumn('rideable_type',when(col('rideable_type').isNull(), lit('classic_bike')).otherwise(col('rideable_type')))
+    def run(self, df: DataFrame, config: Optional[dict]) -> DataFrame:
+        print('Ride type add column initiated')
+        return add_or_update_column(
+            df,
+            'rideable_type',
+            lambda df: when(col('rideable_type').isNull(), lit('classic_bike')).otherwise(col('rideable_type'))
+        )
 
-    ## 
 class  AddDimensionsForTimes(DataTransformer):
     def run(self,df:DataFrame,config:Optional[dict]):
         print("Dimensions time column add initiated")
@@ -83,8 +104,13 @@ class  AddDimensionsForTimes(DataTransformer):
 class AddColumnWithLiteralValue(DataTransformer):
     def run(self,df:DataFrame,config:Optional[dict]):
         print("Column With value literal initiated")
-        df = df.withColumn(config['column_to_add']['column_name'],lit(config['column_to_add']['column_value']))
-        return df
+        # df = df.withColumn(config['column_to_add']['column_name'],lit(config['column_to_add']['column_value']))
+        return add_or_update_column(
+            df,
+            config['column_to_add']['column_name'],
+            lambda df: lit(config['column_to_add']['column_value'])
+        )
+    
    
     ## Transformer cast to the datamodel
 class CastToDatamodel(DataTransformer):
@@ -109,7 +135,11 @@ class CastToDatamodel(DataTransformer):
 class AddUuidToColumnID(DataTransformer):
     def run(self,df:DataFrame,config:Optional[dict]):
         print(f"Add uuid in to th column: {config['column_id']}")
-        return df.withColumn(config['column_id'],lit(str(uuid.uuid4())))
+        return add_or_update_column(
+            df,
+            config['column_id'],
+            lambda df: (str(uuid.uuid4()))
+        )
 
     ## Cast column to timstamp
 class CastToTimestamp(DataTransformer):
@@ -150,7 +180,6 @@ class FactoryDataTransformer(Enum):
             self.GENDER_TRANSFORMER_OR_ADD:TransformCustomerGenderFormat(),
             self.ADD_COLUMN_DIFF_TIME:AddColumnDiffTime(),
             self.ADD_BIKE_TYPE : AddRideType(),
-            self.ADD_COLUMN_IDS : AddColumnIDs(),
             self.TRANSFORM_CUSTOMER_COLUMN:TransformCustomerTypeFormat(),
             self.ADD_DIMENSIONS_TIME:AddDimensionsForTimes(),
             self.ADD_COLUMN_WITH_LITERAL_VALUE:AddColumnWithLiteralValue(),
