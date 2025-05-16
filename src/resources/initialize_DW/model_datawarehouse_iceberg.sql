@@ -147,7 +147,7 @@ CREATE SCHEMA IF NOT EXISTS  bronze;
 CREATE SCHEMA IF NOT EXISTS sylver ;
 CREATE SCHEMA IF NOT EXISTS gold ;
 
-CREATE TABLE dw_nybike.bronze.trip_data_nybike(
+CREATE TABLE warehouse.bronze.trip_data_nybike(
     dw_period_tag string,
     ride_id string,
 	start_station_id string,
@@ -173,7 +173,7 @@ PARTITIONED BY (dw_period_tag)
 
 -- sylver database 
 
-CREATE TABLE bronze.SylverDw_nybike.trip_data_nybike(
+CREATE TABLE warehouse.sylver.trip_data_nybike(
     trip_uuid string,
     dw_period_tag string,
 	start_station_id string,
@@ -201,8 +201,15 @@ CREATE TABLE bronze.SylverDw_nybike.trip_data_nybike(
     day integer,
     weekday integer,
     weekday_name string
-    )
+)
 USING iceberg
-PARTITIONED BY (dw_period_tag)
+PARTITIONED BY (bucket(16,day),quarter,year)
     ;
 
+------ GLOD LAYER -----
+
+CREATE TABLE warehouse.bronze.fact_trip(
+
+)
+USING iceberg
+PARTITIONED BY(dw_period_tag)
