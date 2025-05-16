@@ -1,19 +1,31 @@
 # airflow_spark_project_datawarehouse_nybiket
-This is a project that aim to implement a datawarehouse
-
+## Description
+This is a project that aim to implement a datawarehouse that collection to aggregate and ploting some graph 
 
 ![Drag Racing](docs_project/Datawarehouse_nybike.drawio.png)
 
+
+## Datawarehouse Modele start schema
+
+
+## Stack
+
+
+
+## Note or command
+
+
 base command 
-`bash
+```bash
 spark-submit \
     --packages "org.apache.iceberg:iceberg-spark-runtime-3.3_2.12:1.3.1,org.projectnessie.nessie-integrations:nessie-spark-extensions-3.3_2.12:0.67.0,software.amazon.awssdk:bundle:2.17.178,software.amazon.awssdk:url-connection-client:2.17.178" \
     --conf "spark.sql.extensions=org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions" \
     --conf "spark.sql.catalog.nessie=org.apache.iceberg.spark.SparkCatalog" \
     --conf "spark.sql.catalog.nessie.uri=http://nessie-server:19120/api/v1" \
     your_spark_job.py
-`
+```
 
+```bash
 spark-submit 
 spark-submit \
     --packages "org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.5.0,org.projectnessie.nessie-integrations:nessie-spark-extensions-3.5_2.12:0.102.5,software.amazon.awssdk:bundle:2.20.131,software.amazon.awssdk:url-connection-client:2.20.131" \
@@ -30,7 +42,10 @@ spark-submit \
     --conf "spark.hadoop.fs.s3a.access.key=${AWS_ACCESS_KEY_ID}" \
     --conf "spark.hadoop.fs.s3a.secret.key=${AWS_SECRET_ACCESS_KEY}" \
     --files ../../resoucrces/configs/config_etl_1_v2_iceberg.yaml --py-files interfaces.py,readers.py,sinkersType.py,etl_metadata.py,helpers_utils.py,transformers.py etl_bronze_nybike.py
+```
 
+
+```bash
 
 spark-submit \
 --packages "org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.5.0,org.projectnessie.nessie-integrations:nessie-spark-extensions-3.5_2.12:0.102.5,software.amazon.awssdk:bundle:2.20.131,software.amazon.awssdk:url-connection-client:2.20.131" \
@@ -49,9 +64,9 @@ spark-submit \
 --conf "spark.hadoop.fs.s3a.path.style.access=true" \
 --conf "spark.hadoop.fs.s3a.impl=org.apache.hadoop.fs.s3a.S3AFileSystem" \
 --files ../../resoucrces/configs/config_etl_1_v2_iceberg.yaml --py-files interfaces.py,readers.py,sinkersType.py,etl_metadata.py,helpers_utils.py,transformers.py etl_bronze_nybike.py
+```
 
-
-
+```bash
 spark-submit \
     --properties-file ../../resources/configs/config.conf \
     your_spark_job.py
