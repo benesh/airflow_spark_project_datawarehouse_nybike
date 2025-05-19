@@ -18,3 +18,4 @@ etl_conf:
     datetime_column : start_at
   column_id: trip_uuid
   cast_to_timestamp : ['start_at','stop_at']
+  value_for_fill: n/a
