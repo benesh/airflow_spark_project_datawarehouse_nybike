@@ -1,30 +1,31 @@
 from interfaces import DataTransformer
 from pyspark.sql import DataFrame
-from pyspark.sql.functions import coalesce,when,col,lit,hash,datediff,xxhash64,year,quarter,dayofmonth,month,dayofweek,date_format,concat,to_timestamp,udf,isnull ,when
+from pyspark.sql.functions import udf,coalesce,when,col,lit,year,quarter,dayofmonth,month,dayofweek,date_format,concat,to_timestamp,udf,isnull ,when
+from pyspark.sql.column import Column
 # from utils import get_distnace
 from enum import Enum
 from pydantic import BaseModel
-from typing import Optional, Callable,Any
+from typing import Optional, Callable,Union
 import uuid
-from datetime import datetime
+
+ExpressionType = Union[Column, Callable[[DataFrame], Column]]
 
 def add_or_update_column(
-    df: DataFrame, 
-    column_name: str, 
-    expression: Callable[[DataFrame], Any]
+    df: DataFrame,
+    column_name: str,
+    expression: ExpressionType
 ) -> DataFrame:
     """
     Adds or updates a column in the DataFrame.
-
-    Args:
-        df (DataFrame): The input DataFrame.
-        column_name (str): The name of the column to add or update.
-        expression (Callable[[DataFrame], Any]): A function that returns the column expression.
-
-    Returns:
-        DataFrame: The updated DataFrame.
+    
+    Supports both direct Column expressions and callable functions that return a Column.
     """
-    return df.withColumn(column_name, expression(df))
+    if isinstance(expression, Column):
+        # If it's already a Column, use it directly
+        return df.select('*',expression.alias(column_name))
+    else:
+        # If it's a function, call it with the DataFrame to get the Column
+        return df.select('*', expression(df).alias(column_name))
 
 
 class DropColumns(DataTransformer):
@@ -46,20 +47,19 @@ It should be run over a DataFrame that is final on naming column
 class TransformCustomerGenderFormat(DataTransformer):
     def run(self,df:DataFrame, config:Optional[dict]) -> DataFrame:
         print("Gend transformation initiated")
-        if 'gender' in df.columns:
-            df= df.withColumn("enr_gender",
+        if 'gender' in df.columns:            
+            df = add_or_update_column("enr_gender",
                                  when(col('gender') == 1,"Male")
                                  .when(col('gender') == 2,'Female')
                                  .otherwise('Unknown'))
         else:
-            df= df.withColumn("enr_gender",lit("Unknown"))
-        df=df.drop('gender')
+            df = add_or_update_column("enr_gender",lit("Unknown"))
         return df
     
 class TransformCustomerTypeFormat(DataTransformer):
     def run(self,df:DataFrame, config:Optional[dict]) -> DataFrame:
         print("Customer type transformation initiated")
-        return df.withColumn("enr_user_type",
+        return df.add_or_update_column("enr_user_type",
                              when(col("user_type") == 'Subscriber',"member")
                              .when(col("user_type") == 'Customer',"casual")
                              .otherwise(col("user_type"))
@@ -68,16 +68,29 @@ class TransformCustomerTypeFormat(DataTransformer):
 class AddColumnDiffTime(DataTransformer):
     def run(self,df:DataFrame,config:Optional[dict]) -> DataFrame:
         print("Duration calculation initiated")
-        return df.withColumn(config['column_result'],
+        return df.add_or_update_column(config['column_result'],
                              when(col(config['column_result']).isNull(),\
                                   col(config['column_greather']).cast('long') - col(config['colmun_lesser']).cast('long'))
                              .otherwise(col(config['column_result']))
                              )
+    
+class FillNa(DataTransformer):
+    """
+    Transformer that fill the dataframe with the value that passed by
+    param:
+        df : Datafame 
+        config : dict {value_to_fill:n/a} example 
+    """
+    def run(self,df:DataFrame,config:Optional[dict]) -> DataFrame:
+        print("Duration calculation initiated")
+        return df.fillna(config['value_for_fill'])
+
 
 # class AddRideType(DataTransformer):
 #     def run(self,df:DataFrame,config:Optional[dict]) -> DataFrame:
 #         print('Ride type add column initiate')
 #         return df.withColumn('rideable_type',when(col('rideable_type').isNull(), lit('classic_bike')).otherwise(col('rideable_type')))
+
 
 class AddRideType(DataTransformer):
     def run(self, df: DataFrame, config: Optional[dict]) -> DataFrame:
@@ -88,18 +101,37 @@ class AddRideType(DataTransformer):
             lambda df: when(col('rideable_type').isNull(), lit('classic_bike')).otherwise(col('rideable_type'))
         )
 
+# class  AddDimensionsForTimes(DataTransformer):
+#     def run(self,df:DataFrame,config:Optional[dict]):
+#         print("Dimensions time column add initiated")
+#         return df.withColumn('year', year(config['datetime_column'])) \
+#              .withColumn('month', month(config['datetime_column'])) \
+#              .withColumn('quarter', quarter(config['datetime_column'])) \
+#              .withColumn('quarter_name', concat(col('year'), lit('Q'), col('quarter'))) \
+#              .withColumn('day', dayofmonth(config['datetime_column'])) \
+#              .withColumn('weekday', dayofweek(config['datetime_column'])) \
+#              .withColumn('month_name', date_format(config['datetime_column'],'MMMM')) \
+#              .withColumn('weekday_name', date_format(config['datetime_column'],'EEEE'))
+
+
+
 class  AddDimensionsForTimes(DataTransformer):
     def run(self,df:DataFrame,config:Optional[dict]):
         print("Dimensions time column add initiated")
-        return df.withColumn('year', year(config['datetime_column'])) \
-             .withColumn('month', month(config['datetime_column'])) \
-             .withColumn('quarter', quarter(config['datetime_column'])) \
-             .withColumn('quarter_name', concat(col('year'), lit('Q'), col('quarter'))) \
-             .withColumn('day', dayofmonth(config['datetime_column'])) \
-             .withColumn('weekday', dayofweek(config['datetime_column'])) \
-             .withColumn('month_name', date_format(config['datetime_column'],'MMMM')) \
-             .withColumn('weekday_name', date_format(config['datetime_column'],'EEEE'))
-
+        columns = [
+            ('year', year(col(config['datetime_column']))),
+            ('month', month(col(config['datetime_column']))),
+            ('quarter', quarter(col(config['datetime_column']))),
+            ('day', dayofmonth(col(config['datetime_column']))),
+            ('weekday', dayofweek(col(config['datetime_column']))),
+            ('month_name', date_format(col(config['datetime_column']), 'MMMM')),
+            ('weekday_name', date_format(col(config['datetime_column']), 'EEEE')),
+            ('quarter_name', concat(col('year'), lit('Q'), col('quarter')))
+        ]
+        for (col_name,expression) in columns:
+            df = add_or_update_column(df,column_name=col_name,expression=expression)
+        return df
+    
     ## add literal value in the dataframe 
 class AddColumnWithLiteralValue(DataTransformer):
     def run(self,df:DataFrame,config:Optional[dict]):
@@ -123,22 +155,27 @@ class CastToDatamodel(DataTransformer):
         filtered_column = list(filter( lambda x: x not in data_model_from_df ,config['schema'].names ))
         if len(filtered_column) > 0 :
             for column in filtered_column:
-                df =  df.withColumn(column, lit(None))
+                df =  df.add_or_update_column(column, lit(None))
 
         df = df.select([
             col(field.name).cast(field.dataType).alias(field.name) 
             for field in config['schema'].fields
         ])
         return df
-
+    
+@udf
+def uuid_gen():
+    return str(uuid.uuid4())
+    
     ## Add a column to like a uuid
 class AddUuidToColumnID(DataTransformer):
+
     def run(self,df:DataFrame,config:Optional[dict]):
         print(f"Add uuid in to th column: {config['column_id']}")
         return add_or_update_column(
             df,
             config['column_id'],
-            lambda df: (str(uuid.uuid4()))
+            uuid_gen()
         )
 
     ## Cast column to timstamp
@@ -147,15 +184,14 @@ class CastToTimestamp(DataTransformer):
         print(f"Cast to timestamp: {config['cast_to_timestamp']}")
         regex_pattern = r"^\d{1,2}/\d{1,2}/\d{4} \d{1,2}:\d{2}$"
         for column in config['cast_to_timestamp'] :
-            df = df.withColumn(column,
-                               when(col(column).rlike(regex_pattern),concat(col(column),lit(':00'))).otherwise(col(column))
-                               ).withColumn(column,
-                                            coalesce(
-                                                to_timestamp(col(column), 'M/d/yyyy H:mm:ss'),
-                                                # to_timestamp(col(column), "yyyy-MM-dd HH:mm:ss"),
-                                                to_timestamp(col(column))
-                                                           )
-                                            )
+            df = df.add_or_update_column(column,
+                               when(col(column).rlike(regex_pattern),concat(col(column),lit(':00'))).otherwise(col(column)))
+            df = add_or_update_column(column, coalesce(
+                            to_timestamp(col(column), 'M/d/yyyy H:mm:ss'),
+                            # to_timestamp(col(column), "yyyy-MM-dd HH:mm:ss"),
+                            to_timestamp(col(column))
+                                        )
+                        )
         return df
 
 class FactoryDataTransformer(Enum):
@@ -171,6 +207,7 @@ class FactoryDataTransformer(Enum):
     CAST_TO_DATAMODEL='cast_to_datamodel'
     ADDUUIDTOCOLUMNID='add_uuid_to_column_id'
     CASTTOTIMESTAMP='cast_to_timestamp'
+    Fill_NA='fill_na'
     
     @property
     def get_data_tranformer(self)->DataTransformer:
@@ -185,7 +222,8 @@ class FactoryDataTransformer(Enum):
             self.ADD_COLUMN_WITH_LITERAL_VALUE:AddColumnWithLiteralValue(),
             self.CAST_TO_DATAMODEL:CastToDatamodel(),
             self.ADDUUIDTOCOLUMNID:AddUuidToColumnID(),
-            self.CASTTOTIMESTAMP:CastToTimestamp()
+            self.CASTTOTIMESTAMP:CastToTimestamp(),
+            self.Fill_NA:FillNa()
         }[self]
 
 class DataTransformerObject(BaseModel):

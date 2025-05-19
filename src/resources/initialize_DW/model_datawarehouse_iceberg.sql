@@ -159,7 +159,7 @@ CREATE TABLE warehouse.bronze.trip_data_nybike(
 	end_station_latitude double,
 	end_station_longitude double,
 	user_type string,
-    gender string,
+    gender striintegerng,
 	customer_year_birth string,
     bike_id bigint,
 	rideable_type string,
@@ -187,6 +187,7 @@ CREATE TABLE warehouse.sylver.trip_data_nybike(
 	bike_id string,
 	user_type string,
     enr_user_type string,
+    gender integer,
     enr_gender string,
 	customer_year_birth  string,
 	rideable_type string,
@@ -203,13 +204,71 @@ CREATE TABLE warehouse.sylver.trip_data_nybike(
     weekday_name string
 )
 USING iceberg
-PARTITIONED BY (bucket(16,day),quarter,year)
-    ;
+PARTITIONED BY (bucket(16,day),quarter,year);
 
 ------ GLOD LAYER -----
 
-CREATE TABLE warehouse.bronze.fact_trip(
-
+CREATE TABLE warehouse.gold.fact_trip(
+    fact_id INTEGER,
+    dim_localisation_fk INTEGER,
+    dim_customer_fk INTEGER,
+    dim_times_fk INTEGER,
+    dim_rideable_fk INTEGER,
+    start_at timestamp,
+	stop_at timestamp,
+	trip_duration double
 )
 USING iceberg
 PARTITIONED BY(dw_period_tag)
+;
+
+CREATE TABLE warehouse.gold.dim_localisation(
+	start_station_id string,
+	start_station_name string,
+	start_station_latitude string,
+	start_station_longitude string,
+	end_station_id string,
+	end_station_name string,
+	end_station_latitude string,
+	end_station_longitude string,
+)
+USING iceberg
+PARTITIONED BY(dw_period_tag)
+;
+
+CREATE TABLE warehouse.gold.dim_customer(
+
+	user_type string,
+    enr_user_type string,
+    enr_gender string,
+	customer_year_birth  string,
+	rideable_type string,
+)
+USING iceberg
+PARTITIONED BY(dw_period_tag)
+;
+
+CREATE TABLE warehouse.gold.dim_times(
+	start_at timestamp,
+	stop_at timestamp,
+    year integer,
+    quarter integer,
+    quarter_name string,
+    month integer,
+    month_name string,
+    day integer,
+    weekday integer,
+    weekday_name string
+)
+USING iceberg
+PARTITIONED BY(dw_period_tag)
+;
+
+CREATE TABLE warehouse.gold.dim_rideable(
+
+	bike_id string,
+	rideable_type string,
+)
+USING iceberg
+PARTITIONED BY(dw_period_tag)
+;
