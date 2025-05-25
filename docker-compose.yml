@@ -394,7 +394,6 @@ services:
       /usr/bin/mc policy set public minio/warehouse;
       tail -f /dev/null
       "
-
  
    
   nessie:

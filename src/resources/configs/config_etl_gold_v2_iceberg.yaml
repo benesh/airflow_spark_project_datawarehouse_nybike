@@ -1,19 +1,20 @@
 source:
   reader: IcebergQuery
-  dbtable: bronze.DW_ny_bike.trip_data_nybike
-  query: select * from {} where dw_period_tag={}
+  dbtable: warehouse.bronze.trip_data_nybike
+  query: select * from {} where dw_period_tag='{}'
 
 target:
   schema: sylver
   sink: SinkDataToIceberg
   mode: append
-  dbtable: bronze.SylverDw_nybike.trip_data_nybike
+  dbtable: warehouse.sylver.trip_data_nybike
 
 etl_conf:
   diff_column:
-    column_result: trip_duration
+    column_result: enr_trip_duration
     column_greather: stop_at
     colmun_lesser: start_at
+    column_ancien: trip_duration
   dimensions_time :
     datetime_column : start_at
   column_id: trip_uuid

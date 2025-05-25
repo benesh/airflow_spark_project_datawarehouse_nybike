@@ -82,9 +82,9 @@ CREATE TABLE process_report.etl_metadata (
 );
 
 
-CREATE TABLE bronze.DW_ny_bike.trip_data_nybike(
+CREATE TABLE warehouse.bronze.trip_data_nybike(
     dw_period_tag string,
-    ride_id string,
+    ride_id string, 
 	start_station_id string,
 	start_station_name string,
 	start_station_latitude string ,
@@ -106,10 +106,10 @@ USING iceberg
 PARTITIONED BY (dw_period_tag)
 ;
 
---Creating an indew for the tag period 
+--Creating an index for the tag period 
 CREATE INDEX trip_data_tag_period ON bronze.trip_data_nybike(dw_period_tag);
 
-CREATE TABLE sylver.trip_data_nybike(
+CREATE TABLE warehouse.sylver.trip_data_nybike(
     trip_uuid UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     dw_period_tag VARCHAR(50),
 	start_station_id VARCHAR(250),
@@ -191,38 +191,40 @@ CREATE TABLE warehouse.sylver.trip_data_nybike(
     enr_gender string,
 	customer_year_birth  string,
 	rideable_type string,
+	enr_rideable_type string,
 	start_at timestamp,
 	stop_at timestamp,
 	trip_duration double,
-    year integer,
-    quarter integer,
-    quarter_name string,
-    month integer,
-    month_name string,
-    day integer,
-    weekday integer,
-    weekday_name string
+	enr_trip_duration double,
+    enr_year integer,
+    enr_quarter integer,
+    enr_quarter_name string,
+    enr_month integer,
+    enr_month_name string,
+    enr_day integer,
+    enr_weekday integer,
+    enr_weekday_name string
 )
 USING iceberg
-PARTITIONED BY (bucket(16,day),quarter,year);
+PARTITIONED BY (enr_year,enr_quarter,enr_month,bucket(10,enr_day));
 
 ------ GLOD LAYER -----
 
 CREATE TABLE warehouse.gold.fact_trip(
-    fact_id INTEGER,
-    dim_localisation_fk INTEGER,
-    dim_customer_fk INTEGER,
+    fact_id_uuid string, 
     dim_times_fk INTEGER,
     dim_rideable_fk INTEGER,
     start_at timestamp,
 	stop_at timestamp,
-	trip_duration double
+	trip_duration double,
+    enr_trip_duration double
 )
 USING iceberg
-PARTITIONED BY(dw_period_tag)
+PARTITIONED BY(year(start_at),month(start_at),bucket(10,day(start_at)))
 ;
 
-CREATE TABLE warehouse.gold.dim_localisation(
+CREATE TABLE warehouse.gold.dim_location(
+    dim_location_uuid_id string,
 	start_station_id string,
 	start_station_name string,
 	start_station_latitude string,
@@ -231,44 +233,44 @@ CREATE TABLE warehouse.gold.dim_localisation(
 	end_station_name string,
 	end_station_latitude string,
 	end_station_longitude string,
+    start_at timestamp
 )
 USING iceberg
-PARTITIONED BY(dw_period_tag)
+PARTITIONED BY(year(start_at),month(start_at),bucket(10,day(start_at)))
 ;
 
 CREATE TABLE warehouse.gold.dim_customer(
-
+    dim_customer_uuid string,
 	user_type string,
     enr_user_type string,
+    gender integer,
     enr_gender string,
-	customer_year_birth  string,
-	rideable_type string,
+	customer_year_birth  integer
 )
 USING iceberg
-PARTITIONED BY(dw_period_tag)
+PARTITIONED BY(enr_user_type,enr_gender)
 ;
 
 CREATE TABLE warehouse.gold.dim_times(
-	start_at timestamp,
-	stop_at timestamp,
-    year integer,
-    quarter integer,
-    quarter_name string,
-    month integer,
-    month_name string,
-    day integer,
-    weekday integer,
-    weekday_name string
+    dim_time_uuid string,
+    enr_year integer,
+    enr_quarter integer,
+    enr_quarter_name string,
+    enr_month integer,
+    enr_month_name string,
+    enr_day integer,
+    enr_weekday integer,
+    enr_weekday_name string,
+    start_at timestamp,
+	stop_at timestamp
 )
 USING iceberg
-PARTITIONED BY(dw_period_tag)
+PARTITIONED BY(year(start_at),month(start_at),bucket(10,day(start_at)))
 ;
 
 CREATE TABLE warehouse.gold.dim_rideable(
-
-	bike_id string,
-	rideable_type string,
+    rideable_type_id integer,
+	rideable_type string
 )
 USING iceberg
-PARTITIONED BY(dw_period_tag)
 ;

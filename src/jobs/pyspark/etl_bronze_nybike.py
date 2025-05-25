@@ -5,9 +5,9 @@ from pyspark import SparkFiles
 from transformers import runner_transformer_data,DataTransformerObject,FactoryDataTransformer
 from readers import FactoryReader
 from sinkersType import FactorySinkData
-from helpers_utils import config_reader,list_files_with_format
+from helpers_utils import config_reader,list_files_with_format,get_row_to_process
 from datetime import datetime
-from etl_metadata import ETL_Metadata,log_etl_metadata,get_data_to_process,Data_To_Process,update_data_to_porcess
+from etl_metadata import ETL_Metadata,log_etl_metadata,Data_To_Process,update_data_to_porcess
 from model_data import bronze_schema_ny_bike
 import traceback
 
@@ -53,8 +53,9 @@ def run(spark:SparkSession,data_to_process:Data_To_Process,config:dict):
             df = FactoryReader().getDataframe(spark,config['source'])
             #transforms files
             df = runner_transformer_data(catalog_transformer,df)
-            # write files
+            # Insert column that is not presen in the Dataframe with None value 
             df = df.to(bronze_schema_ny_bike)
+            # write files
             FactorySinkData().run(df,config['target'])
             rows_processed += df.count()
 
@@ -106,26 +107,13 @@ if __name__ == "__main__":
             .getOrCreate()
     
     # path_file='/opt/airflow/resources/configs/config_etl_1_v2.yaml'
-    path_file=SparkFiles.get("config_etl_1_v2_iceberg.yaml")
+    path_file=SparkFiles.get("config_etl_bronze_v2_iceberg.yaml")
     config = config_reader(path=path_file)
-    result = get_data_to_process("FAILURE_TO_BRONZE_LAYER")
+    # result = get_data_to_process("FAILURE_TO_BRONZE_LAYER")
     # result = get_data_to_process("TO_BRONZE_LAYER")
-
-    # for data_to_process in result:
-    #     config['source']['path_csv'] = data_to_process.path_csv
-    #     config['source']['month'] = data_to_process.month
-    #     config['source']['year'] = data_to_process.year
-    #     config['source']['reader'] = data_to_process.reader 
-    #     config['source']['process_period'] = data_to_process.process_period 
-    #     run(data_to_process = data_to_process,config = config)
     
-    data_to_process = result[0]
+    data_to_process = get_row_to_process('FAILURE_TO_BRONZE_LAYER','TO_BRONZE_LAYER')
     config['source']['path_csv'] = data_to_process.path_csv
-
-    # config['source']['month'] = data_to_process.month
-    # config['source']['year'] = data_to_process.year
-    # config['source']['reader'] = data_to_process.reader 
-    # config['source']['process_period'] = data_to_process.process_period
 
     config['etl_conf']['column_to_add']['column_value'] =data_to_process.period_tag
     config['etl_conf']['schema'] = bronze_schema_ny_bike

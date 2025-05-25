@@ -59,6 +59,7 @@ class ReaderFromIceberg(Reader):
     
 class ReaderQueryFromIceberg(Reader):
     def run(self,spark,config:dict) -> DataFrame:
+         print(config['query'].format(config['dbtable'],config['dw_period_tag']))
          return spark.sql(config['query'].format(config['dbtable'],config['dw_period_tag']))
 
 class FactoryReader:

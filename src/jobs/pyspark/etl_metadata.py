@@ -72,7 +72,7 @@ def update_data_to_porcess(data: Data_To_Process):
 
 def get_data_to_process(status:str):
     with Session(engine) as session:
-        statement = select(Data_To_Process).where(Data_To_Process.status==status)
+        statement = select(Data_To_Process).where(Data_To_Process.status==status).order_by(Data_To_Process.id)
         result = session.exec(statement).all()
         return result
 
