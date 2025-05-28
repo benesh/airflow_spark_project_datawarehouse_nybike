@@ -106,7 +106,7 @@ CREATE TABLE bronze.trip_data_nybike(
 --Creating an indew for the tag period 
 CREATE INDEX trip_data_tag_period ON bronze.trip_data_nybike(dw_period_tag);
 
-CREATE TABLE sylver.trip_data_nybike(
+CREATE TABLE silver.trip_data_nybike(
     trip_uuid UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     dw_period_tag VARCHAR(50),
 	start_station_id VARCHAR(250),

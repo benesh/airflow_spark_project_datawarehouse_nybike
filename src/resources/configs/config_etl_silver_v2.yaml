@@ -12,7 +12,7 @@ target:
   user: admin
   password : your-password
   driver: org.postgresql.Driver
-  schema: sylver
+  schema: silver
   dbtable: trip_data_nybike
   sink: database
   mode: append

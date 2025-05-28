@@ -8,7 +8,7 @@ from sinkersType import FactorySinkData
 from helpers_utils import config_reader,get_row_to_process
 from datetime import datetime
 from etl_metadata import ETL_Metadata,log_etl_metadata,get_data_to_process,Data_To_Process,update_data_to_porcess
-from model_data import sylver_schema_ny_bike
+from model_data import silver_schema_ny_bike
 
 
 def run(spark:SparkSession,data_to_process:Data_To_Process,config:dict):
@@ -133,7 +133,7 @@ if __name__ == "__main__":
     # data_to_process = result[0]
     
     config['source']['dw_period_tag'] = data_to_process.period_tag 
-    config['etl_conf']['schema'] = sylver_schema_ny_bike 
+    config['etl_conf']['schema'] = silver_schema_ny_bike 
     run(spark,data_to_process = data_to_process,config = config)
 
 

@@ -8,7 +8,7 @@ from sinkersType import FactorySinkData
 from helpers_utils import config_reader,get_row_to_process
 from datetime import datetime
 from etl_metadata import ETL_Metadata,log_etl_metadata,get_data_to_process,Data_To_Process,update_data_to_porcess
-from model_data import sylver_schema_ny_bike
+from model_data import silver_schema_ny_bike
 
 
 def run(spark:SparkSession,data_to_process:Data_To_Process,config:dict):
@@ -16,7 +16,7 @@ def run(spark:SparkSession,data_to_process:Data_To_Process,config:dict):
         # Step 1: Capture start time and initialize metadata
         start_time = datetime.now()
         metadata = ETL_Metadata(
-            process_name="ETL_TO_SYLVER_LAYER",
+            process_name="ETL_TO_SILVER_LAYER",
             start_time=start_time,
             status="IN_PROGRESS",
             process_period=data_to_process.process_period,
@@ -99,7 +99,7 @@ def run(spark:SparkSession,data_to_process:Data_To_Process,config:dict):
         metadata.error_message = str(e)
         log_etl_metadata(metadata)  # Update metadata with error details
 
-        data_to_process.status='FAILURE_TO_SYLVER_LAYER'
+        data_to_process.status='FAILURE_TO_SILVER_LAYER'
         update_data_to_porcess(data_to_process)
         traceback.print_exc()
         print(f"ETL process failed: {e}")
@@ -107,7 +107,7 @@ def run(spark:SparkSession,data_to_process:Data_To_Process,config:dict):
 if __name__ == "__main__":
 
     spark = SparkSession.builder \
-    .appName("spark-etl_nybike_sylver") \
+    .appName("spark-etl_nybike_silver") \
         .config("spark.dynamicAllocation.enabled", "true") \
         .config("spark.shuffle.service.enabled", "true") \
         .config("spark.dynamicAllocation.minExecutors", "2") \
@@ -116,11 +116,11 @@ if __name__ == "__main__":
         .getOrCreate()
 
     # path_file='/opt/airflow/resources/configs/config_etl_2_v2.yaml'
-    path_file=SparkFiles.get("config_etl_sylver_v2_iceberg.yaml")
+    path_file=SparkFiles.get("config_etl_silver_v2_iceberg.yaml")
     config = config_reader(path=path_file)
     # result = get_data_to_process("TO_SYLVER_LAYER")
     # result = get_data_to_process("FAILURE_TO_SYLVER_LAYER")
-    data_to_process = get_row_to_process('FAILURE_TO_SYLVER_LAYER','TO_SYLVER_LAYER')
+    data_to_process = get_row_to_process('FAILURE_TO_SILVER_LAYER','TO_SILVER_LAYER')
 
     # for data_to_process in result:
     #     config['source']['path_csv'] = data_to_process.path_csv
@@ -133,7 +133,7 @@ if __name__ == "__main__":
     # data_to_process = result[0]
     
     config['source']['dw_period_tag'] = data_to_process.period_tag 
-    config['etl_conf']['schema'] = sylver_schema_ny_bike 
+    config['etl_conf']['schema'] = silver_schema_ny_bike 
     run(spark,data_to_process = data_to_process,config = config)
 
 

@@ -4,7 +4,7 @@
 */
 
 CREATE SCHEMA bronze;
-CREATE SCHEMA sylver;
+CREATE SCHEMA silver;
 CREATE SCHEMA gold;
 
 CREATE SCHEMA process_report;
@@ -109,7 +109,7 @@ PARTITIONED BY (dw_period_tag)
 --Creating an index for the tag period 
 CREATE INDEX trip_data_tag_period ON bronze.trip_data_nybike(dw_period_tag);
 
-CREATE TABLE warehouse.sylver.trip_data_nybike(
+CREATE TABLE warehouse.silver.trip_data_nybike(
     trip_uuid UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     dw_period_tag VARCHAR(50),
 	start_station_id VARCHAR(250),
@@ -144,7 +144,7 @@ CREATE DATABASE dw_nybike;
 
 USE dw_nybike;
 CREATE SCHEMA IF NOT EXISTS  bronze;
-CREATE SCHEMA IF NOT EXISTS sylver ;
+CREATE SCHEMA IF NOT EXISTS silver ;
 CREATE SCHEMA IF NOT EXISTS gold ;
 
 CREATE TABLE warehouse.bronze.trip_data_nybike(
@@ -173,7 +173,7 @@ PARTITIONED BY (dw_period_tag)
 
 -- sylver database 
 
-CREATE TABLE warehouse.sylver.trip_data_nybike(
+CREATE TABLE warehouse.silver.trip_data_nybike(
     trip_uuid string,
     dw_period_tag string,
 	start_station_id string,

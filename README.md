@@ -1,14 +1,23 @@
-# airflow_spark_project_datawarehouse_nybiket
-## Description
+# Project : NYC Bike Trips Lakehouse
+## Overview
 This is a project that aim to implement a datawarehouse that collection to aggregate and ploting some graph 
 
-![Drag Racing](docs_project/Datawarehouse_nybike.drawio.png)
+![Drag Racing](./docs_project/Datawarehouse_nybike_overview_drawio.png)
+
+## Description of the Stak 
+
+| Layer                      | Tools & Components                        | Key Role                                                 |
+| -------------------------- | ----------------------------------------- | -------------------------------------------------------- |
+| 1. Ingestion               | MinIO, Docker                             | Raw data landing zone                                    |
+| 2. ETL & Transformation    | PySpark, Python                           | Medallion architecture pipeline (Bronze → Silver → Gold) |
+| 3. Orchestration           | Apache Airflow, PostgreSQL                | Job scheduling, dependency management                    |
+| 4. Storage & Versioning    | Apache Iceberg, Apache Nessie, PostgreSQL | ACID tables, schema evolution, time travel               |
+| 5. Query                   | Dremio                                    | SQL interface over Iceberg tables                        |
+| 6. Visualization           | Apache Superset                           | Dashboards and interactive analytics                     |
+| 7. Infrastructure & DevOps | Docker Compose                            | Local deployment and development environment             |
 
 
-## Datawarehouse Modele start schema
-
-
-## Stack
+## Setup 
 
 
 
@@ -81,7 +90,7 @@ spark-submit --files ../../resources/configs/config_etl_1_v2.yaml --py-files int
 
 spark-submit --files ../../resoucrces/configs/config_etl_1_v2_iceberg.yaml --py-files interfaces.py,readers.py,sinkersType.py,etl_metadata.py,helpers_utils.py,transformers.py etl_bronze_nybike.py
 
-etl sylver :
+etl silver :
 
 spark-submit \
 --packages "org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.5.0,org.projectnessie.nessie-integrations:nessie-spark-extensions-3.5_2.12:0.102.5,software.amazon.awssdk:bundle:2.20.131,software.amazon.awssdk:url-connection-client:2.20.131" \
@@ -101,7 +110,7 @@ spark-submit \
 --conf "spark.hadoop.fs.s3a.impl=org.apache.hadoop.fs.s3a.S3AFileSystem" \
 --executor-memory 8g \
 --driver-memory 8g \
---files ../../resoucrces/configs/config_etl_sylver_v2_iceberg.yaml --py-files interfaces.py,readers.py,sinkersType.py,etl_metadata.py,helpers_utils.py,transformers.py etl_sylver_nybike.py
+--files ../../resoucrces/configs/config_etl_sylver_v2_iceberg.yaml --py-files interfaces.py,readers.py,sinkersType.py,etl_metadata.py,helpers_utils.py,transformers.py etl_silver_nybike.py
 
 
 
@@ -126,9 +135,9 @@ spark-submit \
 --files ../../resoucrces/configs/config_etl_2_v2_iceberg.yaml \
 --py-files interfaces.py,readers.py,sinkersType.py,etl_metadata.py,helpers_utils.py,transformers.py etl_sylver_nybike.py
 
-spark-submit --files ../../resources/configs/config_etl_2_v2.yaml --py-files interfaces.py,readers.py,sinkersType.py,etl_metadata.py,helpers_utils.py,transformers.py etl_sylver_nybike.py
+spark-submit --files ../../resources/configs/config_etl_2_v2.yaml --py-files interfaces.py,readers.py,sinkersType.py,etl_metadata.py,helpers_utils.py,transformers.py etl_silver_nybike.py
 
-spark-submit --files ../../resources/configs/config_etl_2_v2_iceberg.yaml --py-files interfaces.py,readers.py,sinkersType.py,etl_metadata.py,helpers_utils.py,transformers.py etl_sylver_nybike.py
+spark-submit --files ../../resources/configs/config_etl_2_v2_iceberg.yaml --py-files interfaces.py,readers.py,sinkersType.py,etl_metadata.py,helpers_utils.py,transformers.py etl_silver_nybike.py
 
 
 spark submit version 2 with packages 

@@ -196,7 +196,6 @@ class AddIdColumnID(DataTransformer):
         )
     
 
-
     ## Cast column to timstamp
 class CastToTimestamp(DataTransformer):
     """
@@ -217,6 +216,12 @@ class CastToTimestamp(DataTransformer):
                         )
         return df
 
+class Cast_To(DataTransformer):
+    def run(self,df:DataFrame,config:Optional[dict]):
+        print(f"Reconcile schema df.to: {config['schema']}")
+        return df.to(config['schema'])
+    
+    
 class Cast_To(DataTransformer):
     def run(self,df:DataFrame,config:Optional[dict]):
         print(f"Reconcile schema df.to: {config['schema']}")

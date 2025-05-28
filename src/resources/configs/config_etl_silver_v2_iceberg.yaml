@@ -4,7 +4,7 @@ source:
   query: select * from {} where dw_period_tag='{}'
 
 target:
-  schema: sylver
+  schema: silver
   sink: SinkDataToIceberg
   mode: append
   dbtable: warehouse.sylver.trip_data_nybike

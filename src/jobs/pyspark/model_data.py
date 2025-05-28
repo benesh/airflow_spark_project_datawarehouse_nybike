@@ -16,7 +16,8 @@ class ModelDatawahouseNYBike:
                           'weekday',
                           'weekdayname',
                           'start_at',
-                          'stop_at')
+                          'stop_at'
+                          )
         config['dbtable'] = 'dim_date_nybike'
         return df_new, config
 
@@ -133,7 +134,7 @@ bronze_schema_ny_bike = StructType([
 
 
 
-sylver_schema_ny_bike = StructType([
+silver_schema_ny_bike = StructType([
     StructField("trip_uuid", StringType(), nullable=True),
     StructField("dw_period_tag", StringType(), nullable=True),
     StructField("start_station_id", StringType(), nullable=True),

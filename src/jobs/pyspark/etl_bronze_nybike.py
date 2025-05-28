@@ -80,7 +80,7 @@ def run(spark:SparkSession,data_to_process:Data_To_Process,config:dict):
         metadata.status = "SUCCESS"
         log_etl_metadata(metadata)  # Update metadata
 
-        data_to_process.status='TO_SYLVER_LAYER'
+        data_to_process.status='TO_SILVER_LAYER'
         update_data_to_porcess(data_to_process)
     
         print("ETL process completed successfully.")
