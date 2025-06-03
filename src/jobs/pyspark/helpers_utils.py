@@ -38,4 +38,4 @@ def get_row_to_process(retry_status:str,new_data_status):
     if len(result) > 0:
         return result[0] 
     result = get_data_to_process(new_data_status)
-    return result[0]
+    return result

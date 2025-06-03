@@ -152,20 +152,20 @@ CREATE TABLE warehouse.bronze.trip_data_nybike(
     ride_id string,
 	start_station_id string,
 	start_station_name string,
-	start_station_latitude DOUBLE ,
-	start_station_longitude DOUBLE ,
+	start_station_latitude string ,
+	start_station_longitude string ,
 	end_station_id string,
 	end_station_name string,
-	end_station_latitude double,
-	end_station_longitude double,
+	end_station_latitude string,
+	end_station_longitude string,
 	user_type string,
-    gender striintegerng,
+    gender string,
 	customer_year_birth string,
-    bike_id bigint,
+    bike_id string,
 	rideable_type string,
-	start_at timestamp,
-	stop_at timestamp, 
-	trip_duration DOUBLE
+	start_at string,
+	stop_at string, 
+	trip_duration string
     )
 USING iceberg
 PARTITIONED BY (dw_period_tag)
@@ -192,6 +192,7 @@ CREATE TABLE warehouse.silver.trip_data_nybike(
 	customer_year_birth  string,
 	rideable_type string,
 	enr_rideable_type string,
+    enr_rideable_type_id integer,
 	start_at timestamp,
 	stop_at timestamp,
 	trip_duration double,
@@ -206,21 +207,19 @@ CREATE TABLE warehouse.silver.trip_data_nybike(
     enr_weekday_name string
 )
 USING iceberg
-PARTITIONED BY (enr_year,enr_quarter,enr_month,bucket(10,enr_day));
+PARTITIONED BY (enr_year,enr_month);
 
 ------ GLOD LAYER -----
 
 CREATE TABLE warehouse.gold.fact_trip(
     fact_id_uuid string, 
-    dim_times_fk INTEGER,
     dim_rideable_fk INTEGER,
     start_at timestamp,
 	stop_at timestamp,
-	trip_duration double,
     enr_trip_duration double
 )
 USING iceberg
-PARTITIONED BY(year(start_at),month(start_at),bucket(10,day(start_at)))
+PARTITIONED BY(year(start_at), month(start_at))
 ;
 
 CREATE TABLE warehouse.gold.dim_location(
@@ -245,7 +244,7 @@ CREATE TABLE warehouse.gold.dim_customer(
     enr_user_type string,
     gender integer,
     enr_gender string,
-	customer_year_birth  integer
+	customer_year_birth string
 )
 USING iceberg
 PARTITIONED BY(enr_user_type,enr_gender)
@@ -269,8 +268,8 @@ PARTITIONED BY(year(start_at),month(start_at),bucket(10,day(start_at)))
 ;
 
 CREATE TABLE warehouse.gold.dim_rideable(
-    rideable_type_id integer,
-	rideable_type string
+    enr_rideable_type_id integer,
+	enr_rideable_type string
 )
 USING iceberg
 ;

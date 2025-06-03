@@ -1,4 +1,4 @@
-#
+#!/usr/bin/env bash
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -15,10 +15,25 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
+
 #
-catalog:
-    default:
-        uri: http://rest:8181
-        s3.endpoint: http://minio:9000
-        s3.access-key-id: admin
-        s3.secret-access-key: password
+# Run airflow command in container
+#
+
+PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+set -euo pipefail
+
+# check is there a docker-compose command, if not, use "docker compose" instead.
+if [ -x "$(command -v docker-compose)" ]; then
+    dc=docker-compose
+else
+    dc="docker compose"
+fi
+
+export COMPOSE_FILE="${PROJECT_DIR}/docker-compose.yaml"
+if [ $# -gt 0 ]; then
+    exec $dc run --rm airflow-cli "${@}"
+else
+    exec $dc run --rm airflow-cli
+fi

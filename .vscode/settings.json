@@ -1,7 +1,0 @@
-{
-    "files.watcherExclude": {
-        "**/target": true
-    },
-    "editor.defaultFormatter": "GitHub.copilot",
-    "github.copilot.chat.byok.ollamaEndpoint": ""
-}

@@ -53,6 +53,10 @@ def run(spark:SparkSession,data_to_process:Data_To_Process,config:dict):
                 config={}
             ),
             DataTransformerObject(
+                transformer=FactoryDataTransformer.ADD_BIKE_TYPE_ID,
+                config={}
+            ),
+            DataTransformerObject(
                 transformer=FactoryDataTransformer.ADD_UUID_TO_COLUMN_ID,
                 config=config['etl_conf']
             ),
@@ -67,11 +71,23 @@ def run(spark:SparkSession,data_to_process:Data_To_Process,config:dict):
             )
         ]
 
-
         df = FactoryReader().getDataframe(spark,config['source'])
         df = runner_transformer_data(catalog_transformer,df)
-        # df.printShema()
+
+        ## create the name of 
+        string_date = str(start_time)
+        string_date_str = string_date.replace(' ', '_').replace(':','_').replace('.','_').replace('-','_')
+        branch_name=f"feature_{metadata.process_name}__{string_date_str}"
+        # Create a new branch from main
+        spark.sql(f"CREATE BRANCH IF NOT EXISTS {branch_name} IN warehouse FROM main")
+        # Switch to the new branch
+        spark.sql(f"USE REFERENCE {branch_name} IN warehouse")
+        
+
         FactorySinkData().run(df,config['target'])
+
+        ## Merge the branch to the main after write succeded
+        spark.sql(f"MERGE BRANCH {branch_name} INTO main IN warehouse")
         
         # Step 3: Capture end time and update metadata
         end_time = datetime.now()
@@ -105,36 +121,22 @@ def run(spark:SparkSession,data_to_process:Data_To_Process,config:dict):
         print(f"ETL process failed: {e}")
 
 if __name__ == "__main__":
-
+    
     spark = SparkSession.builder \
     .appName("spark-etl_nybike_silver") \
-        .config("spark.dynamicAllocation.enabled", "true") \
-        .config("spark.shuffle.service.enabled", "true") \
-        .config("spark.dynamicAllocation.minExecutors", "2") \
-        .config("spark.dynamicAllocation.maxExecutors", "10") \
-        .config("spark.sql.parquet.enableVectorizedReader", "false") \
         .getOrCreate()
 
-    # path_file='/opt/airflow/resources/configs/config_etl_2_v2.yaml'
     path_file=SparkFiles.get("config_etl_silver_v2_iceberg.yaml")
     config = config_reader(path=path_file)
-    # result = get_data_to_process("TO_SYLVER_LAYER")
-    # result = get_data_to_process("FAILURE_TO_SYLVER_LAYER")
-    data_to_process = get_row_to_process('FAILURE_TO_SILVER_LAYER','TO_SILVER_LAYER')
 
-    # for data_to_process in result:
-    #     config['source']['path_csv'] = data_to_process.path_csv
-    #     config['source']['month'] = data_to_process.month
-    #     config['source']['year'] = data_to_process.year
-    #     config['source']['reader'] = data_to_process.reader 
-    #     config['source']['process_period'] = data_to_process.process_period 
-    #     run(data_to_process = data_to_process,config = config)
-    
-    # data_to_process = result[0]
-    
-    config['source']['dw_period_tag'] = data_to_process.period_tag 
-    config['etl_conf']['schema'] = silver_schema_ny_bike 
-    run(spark,data_to_process = data_to_process,config = config)
+    data_to_process_list = get_row_to_process('FAILURE_TO_SILVER_LAYER','TO_SILVER_LAYER')
+    if len(data_to_process_list) > 0 :
+        data_to_process = data_to_process_list[0]
+        config['source']['dw_period_tag'] = data_to_process.period_tag 
+        config['etl_conf']['schema'] = silver_schema_ny_bike 
+        run(spark,data_to_process = data_to_process,config = config)
+    print("No data available to precess in Silver Layer")
+
 
 
 

@@ -55,6 +55,8 @@ def run(spark:SparkSession,data_to_process:Data_To_Process,config:dict):
             df = runner_transformer_data(catalog_transformer,df)
             # Insert column that is not presen in the Dataframe with None value 
             df = df.to(bronze_schema_ny_bike)
+            # df.show()
+            # df.printSchema()
             # write files
             FactorySinkData().run(df,config['target'])
             rows_processed += df.count()
@@ -106,17 +108,20 @@ if __name__ == "__main__":
         .appName("spark-etl_nybike_bronze") \
             .getOrCreate()
     
-    # path_file='/opt/airflow/resources/configs/config_etl_1_v2.yaml'
     path_file=SparkFiles.get("config_etl_bronze_v2_iceberg.yaml")
     config = config_reader(path=path_file)
-    # result = get_data_to_process("FAILURE_TO_BRONZE_LAYER")
-    # result = get_data_to_process("TO_BRONZE_LAYER")
-    
-    data_to_process = get_row_to_process('FAILURE_TO_BRONZE_LAYER','TO_BRONZE_LAYER')
-    config['source']['path_csv'] = data_to_process.path_csv
 
-    config['etl_conf']['column_to_add']['column_value'] =data_to_process.period_tag
-    config['etl_conf']['schema'] = bronze_schema_ny_bike
-    config['target']['dw_period_tag'] = bronze_schema_ny_bike
+    data_to_process_list = get_row_to_process('FAILURE_TO_BRONZE_LAYER','TO_BRONZE_LAYER')
+    print(data_to_process_list[0])
+    print(len(data_to_process_list)>0)
+    if len(data_to_process_list) > 0 :
+        data_to_process = data_to_process_list[0]
+        print("Enter to etl _bonze")
+        config['source']['path_csv'] = data_to_process.path_csv
+        config['etl_conf']['column_to_add']['column_value'] =data_to_process.period_tag
+        config['etl_conf']['schema'] = bronze_schema_ny_bike
+        config['target']['dw_period_tag'] = bronze_schema_ny_bike
 
-    run(spark,data_to_process = data_to_process , config = config)
+        run(spark = spark, data_to_process = data_to_process , config = config)
+    else:
+        print("No data available to precess in Bronze Layer")

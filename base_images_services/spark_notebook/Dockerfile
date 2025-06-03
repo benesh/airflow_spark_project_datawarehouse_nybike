@@ -1,78 +1,55 @@
-# Base image with Java 17 and Python 3.12.9
-FROM openjdk:17-jdk-slim
+FROM python:3.11-slim
+
+# Install Java, curl, wget, and other dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends openjdk-17-jdk wget curl ca-certificates && \
+    rm -rf /var/lib/apt/lists/*
 
 # Set environment variables
 ENV SPARK_VERSION=3.5.5 \
     HADOOP_VERSION=3 \
-    PYTHON_VERSION=3.12.9 \
-    SCALA_VERSION=3.3.1 \ 
-    PYSPARK_PYTHON=python3 \
-    PYSPARK_DRIVER_PYTHON=jupyter \
-    PYSPARK_DRIVER_PYTHON_OPTS="lab --ip=0.0.0.0 --port=8888 --allow-root --no-browser"
+    SPARK_HOME=/opt/spark \
+    JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
 
-# Install dependencies
-RUN apt-get update && apt-get install -y \
-    wget \
-    curl \
-    build-essential \
-    libssl-dev \
-    zlib1g-dev \
-    libncurses5-dev \
-    libgdbm-dev \
-    libnss3-dev \
-    libsqlite3-dev \
-    libreadline-dev \
-    libffi-dev \
-    libbz2-dev \
-    git \
-    procps \  
-    net-tools \ 
-    && rm -rf /var/lib/apt/lists/*
+# Download and install Spark
+RUN wget -qO- https://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz | \
+    tar zx -C /opt/ && \
+    ln -s /opt/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION} /opt/spark
 
-# Install Python using pyenv
-RUN curl https://pyenv.run | bash
-ENV PATH="/root/.pyenv/bin:/root/.pyenv/shims:${PATH}"
-RUN pyenv install ${PYTHON_VERSION} && pyenv global ${PYTHON_VERSION}
+# Add Spark and Java to PATH
+ENV PATH=$PATH:$SPARK_HOME/bin:$JAVA_HOME/bin
 
-# Install pip and required Python packages
+# Install JupyterLab and PySpark
 RUN pip install --upgrade pip && \
-    pip install jupyterlab pyspark==${SPARK_VERSION} findspark
+    pip install pyspark==${SPARK_VERSION} jupyterlab pydantic sqlmodel 
 
-# Create a directory for notebooks
-RUN mkdir -p /home/jovyan/work
-
-WORKDIR /home/jovyan
-
-# Download and configure Apache Spark
-RUN wget https://downloads.apache.org/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz && \
-    tar -xzf spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz -C /opt/ && \
-    mv /opt/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION} /opt/spark && \
-    rm spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz
-
-# Set Spark environment variables
-ENV SPARK_HOME=/opt/spark \
-    PATH=$SPARK_HOME/bin:$PATH
-
-# Install Scala 3.x
-RUN curl -fL https://github.com/coursier/coursier/releases/latest/download/cs-x86_64-pc-linux.gz | gzip -d > cs \
-&& chmod +x cs \
-# && mv cs /usr/bin \
-&& ./cs setup -y
-
-# Add Scala to the PATH
-# ENV SCALA_HOME=/opt/scala \
-#     PATH=$SCALA_HOME/bin:$PATH
+ENV SCALA_VERSION=2.12.19
+RUN wget -q https://downloads.lightbend.com/scala/${SCALA_VERSION}/scala-${SCALA_VERSION}.deb && \
+    apt-get update && \
+    apt-get install -y ./scala-${SCALA_VERSION}.deb && \
+    rm scala-${SCALA_VERSION}.deb && \
+    rm -rf /var/lib/apt/lists/*
 
 
-# Copy startup script into the container
-COPY start-spark.sh /start-spark.sh
-RUN chmod +x /start-spark.sh
+RUN apt-get update && apt-get install -y procps    
 
-# Expose ports for Jupyter Lab and Spark UI
-EXPOSE 8888 4040 7077 8080
+# Jupyter config (no password for demo -- DO NOT USE IN PROD)
+RUN mkdir -p /root/.jupyter && \
+    echo "c.NotebookApp.token = ''" > /root/.jupyter/jupyter_notebook_config.py && \
+    echo "c.NotebookApp.password = ''" >> /root/.jupyter/jupyter_notebook_config.py
 
-# Start Jupyter Lab
-# CMD ["/start-spark.sh"]
+# Add Ivy settings for official Maven repository only
+COPY ivysettings.xml /opt/spark/conf/ivysettings.xml
+# COPY spark-defaults.conf /opt/spark/conf/spark-defaults.conf
 
-ENTRYPOINT ["/start-spark.sh"]
-CMD ["source ~/.profile"]
+# Spark default config: point to Ivy settings
+RUN echo "spark.jars.ivySettings /opt/spark/conf/ivysettings.xml" >> /opt/spark/conf/spark-defaults.conf
+
+# Expose Spark and Jupyter ports
+EXPOSE 7077 8080 8888 4044
+
+# Startup script
+COPY start.sh /start.sh
+RUN chmod +x /start.sh
+
+CMD ["/start.sh"]

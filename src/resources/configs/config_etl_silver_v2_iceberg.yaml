@@ -7,7 +7,7 @@ target:
   schema: silver
   sink: SinkDataToIceberg
   mode: append
-  dbtable: warehouse.sylver.trip_data_nybike
+  dbtable: warehouse.silver.trip_data_nybike
 
 etl_conf:
   diff_column:
