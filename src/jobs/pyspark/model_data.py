@@ -1,71 +1,99 @@
 from interfaces import SinkData
 from pyspark.sql import DataFrame 
 from typing import Optional
-from pyspark.sql.functions import lit,concat
+from pyspark.sql.functions import lit,concat,col
 from pyspark.sql.types import StructType, StructField, StringType, IntegerType , TimestampType , DoubleType , FloatType, DateType
 
-class ModelDatawahouseNYBike:
-    def get_df_DIMDATE(self, df: DataFrame, config: dict):
-        df_new = df.select('trip_id',
-                          'year',
-                          'quarter',
-                          concat('year', lit('Q'), 'quarter').alias('quarter_name'),
-                          'month',
-                          'month_name',
-                          'day',
-                          'weekday',
-                          'weekdayname',
+class ModelDatawahouseGoldNYBike:
+    def get_df_fact_trip(self, df: DataFrame, config: dict):
+        df_new = df.select(col('trip_uuid').alias('fact_id_uuid'),
+                          col('enr_rideable_type_id').alias('dim_rideable_fk'),
                           'start_at',
-                          'stop_at')
-        config['dbtable'] = 'dim_date_nybike'
+                          'stop_at',
+                          'enr_trip_duration'
+                          )
+        config['dbtable'] = 'warehouse.gold.fact_trip'
         return df_new, config
 
-    def get_df_DIM_STATION_NYBIKE(self, df: DataFrame, config: dict):
-        df_new = df.select('trip_id',
-                          'year',
-                          'month',
-                          'start_station_name',
-                          'start_station_id',
-                          'start_station_latitude',
-                          'start_station_longitude',
-                          'end_station_name',
-                          'end_station_ID',
-                          'end_station_latitude',
-                          'end_station_longitude')
-        config['dbtable'] = 'dim_station_nybike'
+    def get_df_dim_time(self, df: DataFrame, config: dict):
+        df_new = df.select(col('trip_uuid').alias('dim_time_uuid'),              
+                           "enr_year",
+                           "enr_quarter",
+                           "enr_quarter_name",
+                           "enr_month",
+                           "enr_month_name",
+                           "enr_day",
+                           "enr_weekday",
+                           "enr_weekday_name",
+                           "start_at",
+                           "stop_at"                          
+        )
+        config['dbtable'] = 'warehouse.gold.dim_times'
+        return df_new, config
+    
+    def get_df_location(self, df: DataFrame, config: dict):
+        df_new = df.select(col('trip_uuid').alias('dim_location_uuid_id'),
+                          "start_station_id",
+                          "start_station_name",
+                          "start_station_latitude",
+                          "start_station_longitude",
+                          "end_station_id",
+                          "end_station_name",
+                          "end_station_latitude",
+                          "end_station_longitude",
+                          "start_at"
+        )
+        config['dbtable'] = 'warehouse.gold.dim_location'
         return df_new, config
 
-    def get_df_DIM_FACT(self, df: DataFrame, config: dict):
-        df_new = df.select('trip_id',
-                          'year',
-                          'month',
-                          'rideable_type',
-                          'customer_type',
-                          'cutomer_gender',
-                          'year_birth',
-                          'trip_duration')
-        config['dbtable'] = 'fact_nybike'
+    def get_df_dim_customer(self, df: DataFrame, config: dict):
+        df_new = df.select(col('trip_uuid').alias('dim_customer_uuid'),
+                           "user_type",
+                           "enr_user_type",
+                           "gender",
+                           "enr_gender",
+                           "customer_year_birth"
+        )
+        config['dbtable'] = 'warehouse.gold.dim_customer'
         return df_new, config
+    
+    def get_df_dim_rideable(self, df: DataFrame, config: dict):
+        df_new = df.select(
+            "enr_rideable_type_id",
+	        "enr_rideable_type").distinct()
+        config['dbtable'] = 'warehouse.gold.dim_rideable'
+        return df_new, config
+
 
 class ModelDatawahouseNYBikeV2:
     def _select_and_update_config(self, df, columns, table_name, config):
         config['dbtable'] = table_name
         return df.select(columns), config
 
-    def get_df_DIMDATE(self, df: DataFrame, config: dict):
+    def get_df_dim_date(self, df: DataFrame, config: dict):
         columns = ['trip_id', 'year', 'quarter', concat('year', lit('Q'), 'quarter').alias('quaster_name'),
                    'month', 'month_name', 'day', 'weekday', 'weekdayname', 'start_at','stop_at']
         return self._select_and_update_config(df, columns, 'dim_date_nybike', config)
 
-    def get_df_DIM_STATION_NYBIKE(self, df: DataFrame, config: dict):
+    def get_df_dim_location(self, df: DataFrame, config: dict):
         columns = ['trip_id', 'year', 'month', 'start_staion_name',
                    'start_staion_id', 'start_staion_latitude', 'start_staion_longitude',
                    'end_station_name', 'end_station_id', 'end_station_latitude', 'end_station_longitude']
         return self._select_and_update_config(df, columns, 'dim_station_nybkide', config)
 
-    def get_df_DIM_FACT(self, df: DataFrame, config: dict):
+    def get_df_dim_customer(self, df: DataFrame, config: dict):
         columns = ['trip_id', 'year', 'month', 'rideable_type',
                    'customer_type', 'customer_gender', 'year_birth', 'trip_duration']
+        return self._select_and_update_config(df, columns, 'fact_nybike', config)
+    
+    def get_df_dim_rideable(self, df: DataFrame, config: dict):
+        columns = ['trip_id', 'year', 'month', 'rideable_type',
+                   'customer_type', 'customer_gender', 'year_birth', 'trip_duration']
+        return self._select_and_update_config(df, columns, 'fact_nybike', config)
+    
+    def get_df_dim_fact(self, df: DataFrame, config: dict):
+        columns = ['fact_id_uuid', 'dim_rideable_fk',
+                   'start_at', 'stopt_at', 'enr_trip_duration']
         return self._select_and_update_config(df, columns, 'fact_nybike', config)
 
 
@@ -133,7 +161,7 @@ bronze_schema_ny_bike = StructType([
 
 
 
-sylver_schema_ny_bike = StructType([
+silver_schema_ny_bike = StructType([
     StructField("trip_uuid", StringType(), nullable=True),
     StructField("dw_period_tag", StringType(), nullable=True),
     StructField("start_station_id", StringType(), nullable=True),
@@ -150,6 +178,7 @@ sylver_schema_ny_bike = StructType([
     StructField("customer_year_birth", StringType(), nullable=True),
     StructField("rideable_type", StringType(), nullable=True),
     StructField("enr_rideable_type", StringType(), nullable=True),
+    StructField("enr_rideable_type_id", IntegerType(), nullable=True),
     StructField("start_at", TimestampType(), nullable=True),
     StructField("stop_at", TimestampType(), nullable=True),
     StructField("trip_duration", DoubleType(), nullable=True),

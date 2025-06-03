@@ -2,7 +2,7 @@
 FROM  ${AIRFLOW_IMAGE_NAME:-apache/airflow:2.10.3}
 # COPY pyproject.toml .
 
-RUN pip install apache-airflow-providers-apache-spark
+RUN pip install apache-airflow-providers-apache-spark==3.0.0 pyspark==3.5.5 sqlmodel
 
 
 USER 0

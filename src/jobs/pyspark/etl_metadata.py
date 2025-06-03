@@ -7,7 +7,7 @@ import os
 # Database connection details
 PG_USER = "postgres"
 PG_PASSWORD = "postgres"
-PG_HOST = "postgres"  # Replace with your host
+PG_HOST = "postgres_metadata"  # Replace with your host
 PG_PORT = "5432"       # Default PostgreSQL port
 PG_DATABASE = "postgres"
 

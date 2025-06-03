@@ -6,12 +6,19 @@ from typing import Optional
 class SinkDataToIceberg(SinkData):
     def run(self,df:DataFrame, config:Optional[dict]):
         print("Sink data to Iceberg")
-        # try:
-        df.write.saveAsTable(name=config['dbtable']
-                             ,mode = config['mode']
-                             )
-        # except Exception as e:
-        #     print(f"Error writing to {config['iceberg_table_name']}: {e}")
+        # df.write.saveAsTable(name=config['dbtable']
+        #                      ,mode = config['mode']
+        #                      )
+        table = config["dbtable"]
+        mode = config["mode"]
+
+        if mode == "append":
+            df.writeTo(table).append()
+        elif mode == "overwrite":
+            df.writeTo(table).overwrite()
+        else:
+            raise ValueError("Unsupported write mode for Iceberg table")
+
 class SinkDataToParquetDirectory(SinkData):
     def run(self,df:DataFrame, config:Optional[dict]):
         print("Sink data to Iceberg")

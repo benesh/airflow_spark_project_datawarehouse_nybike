@@ -17,7 +17,7 @@ target:
   sink: SinkDataToIceberg
   schema: dw_nybike
   mode : append
-  dbtable:  warehouse.bronze.trip_data_nybike
+  dbtable: warehouse.bronze.trip_data_nybike
 
 
 # target:

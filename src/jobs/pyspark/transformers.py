@@ -65,7 +65,6 @@ class TransformCustomerTypeFormat(DataTransformer):
                              .otherwise(col("user_type"))
                             )
 
-
 class AddColumnDiffTime(DataTransformer):
     def run(self,df:DataFrame,config:Optional[dict]) -> DataFrame:
         print("Duration calculation initiated")
@@ -102,6 +101,15 @@ class AddRideType(DataTransformer):
             df,
             'enr_rideable_type',
             lambda df: when(col('rideable_type').isNull(), lit('classic_bike')).otherwise(col('rideable_type'))
+        )
+    
+class AddRideTypeId(DataTransformer):
+    def run(self, df: DataFrame, config: Optional[dict]) -> DataFrame:
+        print('Ride type add column initiated')
+        return add_or_update_column(
+            df,
+            'enr_rideable_type_id',
+            lambda df: when(col('enr_rideable_type') =='classic_bike', lit(1)).otherwise(lit(2))
         )
 
 # class  AddDimensionsForTimes(DataTransformer):
@@ -196,7 +204,6 @@ class AddIdColumnID(DataTransformer):
         )
     
 
-
     ## Cast column to timstamp
 class CastToTimestamp(DataTransformer):
     """
@@ -221,12 +228,20 @@ class Cast_To(DataTransformer):
     def run(self,df:DataFrame,config:Optional[dict]):
         print(f"Reconcile schema df.to: {config['schema']}")
         return df.to(config['schema'])
+    
+    
+# class Cast_To(DataTransformer):
+#     def run(self,df:DataFrame,config:Optional[dict]):
+#         print(f"Reconcile schema df.to: {config['schema']}")
+#         return df.to(config['schema'])
+    
 
 class FactoryDataTransformer(Enum):
     RENAME_COLUMNS='rename_column'
     DROP_COLUMNS ='drop_columns'
     GENDER_TRANSFORMER_OR_ADD = 'gender_transformer_or_add'
     ADD_BIKE_TYPE = 'add_bike_type'
+    ADD_BIKE_TYPE_ID = 'add_bike_type_ID'
     ADD_COLUMN_DIFF_TIME ='add_trip_duration'
     TRANSFORM_CUSTOMER_COLUMN ='transform_customer_column'
     ADD_COLUMN_IDS='add_column_ids'
@@ -246,6 +261,7 @@ class FactoryDataTransformer(Enum):
             self.GENDER_TRANSFORMER_OR_ADD: TransformCustomerGenderFormat(),
             self.ADD_COLUMN_DIFF_TIME: AddColumnDiffTime(),
             self.ADD_BIKE_TYPE : AddRideType(),
+            self.ADD_BIKE_TYPE_ID : AddRideTypeId(),
             self.TRANSFORM_CUSTOMER_COLUMN: TransformCustomerTypeFormat(),
             self.ADD_DIMENSIONS_TIME: AddDimensionsForTimes(),
             self.ADD_COLUMN_WITH_LITERAL_VALUE: AddColumnWithLiteralValue(),

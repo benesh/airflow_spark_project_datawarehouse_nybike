@@ -1,0 +1,22 @@
+source:
+  reader: IcebergQuery
+  dbtable: warehouse.bronze.trip_data_nybike
+  query: select * from {} where dw_period_tag='{}'
+
+target:
+  schema: silver
+  sink: SinkDataToIceberg
+  mode: append
+  dbtable: warehouse.silver.trip_data_nybike
+
+etl_conf:
+  diff_column:
+    column_result: enr_trip_duration
+    column_greather: stop_at
+    colmun_lesser: start_at
+    column_ancien: trip_duration
+  dimensions_time :
+    datetime_column : start_at
+  column_id: trip_uuid
+  cast_to_timestamp : ['start_at','stop_at']
+  value_for_fill: n/a

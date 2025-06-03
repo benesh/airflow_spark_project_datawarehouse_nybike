@@ -18,5 +18,6 @@ RUN export PATH=$PATH:$HADOOP_HOME/sbin:$HADOOP_HOME/bin
 # RUN curl -s https://repo1.maven.org/maven2/software/amazon/awssdk/s3/2.29.38/s3-2.29.38.jar -Lo /opt/bitnami/spark/jars/jars/s3-2.29.38.jar
 # RUN curl -s https://repo1.maven.org/maven2/software/amazon/awssdk/bundle/2.29.38/bundle-2.29.38.jar -Lo /opt/bitnami/spark/jars/bundle-2.29.38.jar
 # RUN curl -s https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/3.4.1/hadoop-aws-3.4.1.jar -Lo /opt/bitnami/spark/jars/hadoop-aws-3.4.1.jar
-RUN curl -s https://repo1.maven.org/maven2/org/postgresql/postgresql/42.7.4/postgresql-42.7.4.jar -Lo /opt/bitnami/spark/jars/postgresql-42.7.4.jar   
+# RUN curl -s https://repo1.maven.org/maven2/org/postgresql/postgresql/42.7.4/postgresql-42.7.4.jar -Lo /opt/bitnami/spark/jars/postgresql-42.7.4.jar   
+
 RUN pip install notebook boto3 psycopg2-binary pydantic sqlmodel sqlalchemy
