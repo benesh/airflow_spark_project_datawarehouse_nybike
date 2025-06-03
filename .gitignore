@@ -8,3 +8,6 @@ volumes_and_data_services/
 .venv/
 env_v2/
 src/jobs/pyspark/__pycache__/*
+
+*.log
+*/log
