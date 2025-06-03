@@ -135,7 +135,11 @@ if __name__ == "__main__":
         config['source']['dw_period_tag'] = data_to_process.period_tag 
         config['etl_conf']['schema'] = silver_schema_ny_bike 
         run(spark,data_to_process = data_to_process,config = config)
-    print("No data available to precess in Silver Layer")
+    else:
+        print("No data available to precess in Silver Layer")
+    
+        spark.stop()
+
 
 
 

@@ -78,6 +78,9 @@ def run(spark:SparkSession,data_to_process:Data_To_Process,config:dict):
         df_4_to_insert = df_4.join( df_existing_rideable, on="enr_rideable_type_id", how="left_anti")
         FactorySinkData().run(df_4_to_insert,config4)
 
+        df_5,config5 = ModelDatawahouseGoldNYBike().get_df_dim_time(df,config['target'])
+        FactorySinkData().run(df_5,config5)
+
         # Merge the feature branch back into main
         spark.sql(f"MERGE BRANCH {branch_name} INTO main IN warehouse")
         
@@ -121,11 +124,15 @@ if __name__ == "__main__":
     config = config_reader(path=path_file)
 
     data_to_process_list = get_row_to_process('FAILURE_TO_GOLD_LAYER','TO_GOLD_LAYER')
+    print(data_to_process_list)
     if len(data_to_process_list) > 0 :
         data_to_process = data_to_process_list[0]    
         config['source']['dw_period_tag'] = data_to_process.period_tag 
         run(spark,data_to_process = data_to_process,config = config)
-    print("No data available to precess in GOLD Layer")
+    else:
+        print("No data available to precess in GOLD Layer")
+    spark.stop()
+
 
 
 

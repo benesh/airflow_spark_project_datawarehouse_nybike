@@ -125,3 +125,4 @@ if __name__ == "__main__":
         run(spark = spark, data_to_process = data_to_process , config = config)
     else:
         print("No data available to precess in Bronze Layer")
+    spark.stop()

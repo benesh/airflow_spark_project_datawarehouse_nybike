@@ -15,6 +15,22 @@ class ModelDatawahouseGoldNYBike:
         config['dbtable'] = 'warehouse.gold.fact_trip'
         return df_new, config
 
+    def get_df_dim_time(self, df: DataFrame, config: dict):
+        df_new = df.select(col('trip_uuid').alias('dim_time_uuid'),              
+                           "enr_year",
+                           "enr_quarter",
+                           "enr_quarter_name",
+                           "enr_month",
+                           "enr_month_name",
+                           "enr_day",
+                           "enr_weekday",
+                           "enr_weekday_name",
+                           "start_at",
+                           "stop_at"                          
+        )
+        config['dbtable'] = 'warehouse.gold.dim_times'
+        return df_new, config
+    
     def get_df_location(self, df: DataFrame, config: dict):
         df_new = df.select(col('trip_uuid').alias('dim_location_uuid_id'),
                           "start_station_id",
