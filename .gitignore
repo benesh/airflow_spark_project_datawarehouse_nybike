@@ -10,4 +10,10 @@ env_v2/
 src/jobs/pyspark/__pycache__/*
 
 *.log
-*/log
+logs
+target/
+.*
+
+**/.*
+notebooks_test/.Trash-0
+.env 

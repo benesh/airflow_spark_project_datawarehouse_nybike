@@ -17,22 +17,20 @@ This is a project that aim to implement a datawarehouse that collection to aggre
 | 7. Infrastructure & DevOps | Docker Compose                            | Local deployment and development environment             |
 
 
-## Setup 
+## Dashbord on Superset
+![Dashbord of trips](./docs_project/dashbord-trip-2025-06-04T11-17-49.781Z.jpg)
 
 
+## Setup the docker compose 
 
-## Note or command
-
-
-base command 
 ```bash
-spark-submit \
-    --packages "org.apache.iceberg:iceberg-spark-runtime-3.3_2.12:1.3.1,org.projectnessie.nessie-integrations:nessie-spark-extensions-3.3_2.12:0.67.0,software.amazon.awssdk:bundle:2.17.178,software.amazon.awssdk:url-connection-client:2.17.178" \
-    --conf "spark.sql.extensions=org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions" \
-    --conf "spark.sql.catalog.nessie=org.apache.iceberg.spark.SparkCatalog" \
-    --conf "spark.sql.catalog.nessie.uri=http://nessie-server:19120/api/v1" \
-    your_spark_job.py
+
+
+
 ```
+
+
+## Command to submit jobs on different Layer or Stage
 
 ```bash
 spark-submit 
@@ -55,7 +53,6 @@ spark-submit \
 
 
 ```bash
-
 spark-submit \
 --packages "org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.5.0,org.projectnessie.nessie-integrations:nessie-spark-extensions-3.5_2.12:0.102.5,software.amazon.awssdk:bundle:2.20.131,software.amazon.awssdk:url-connection-client:2.20.131" \
 --conf "spark.sql.extensions=org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions,org.projectnessie.spark.extensions.NessieSparkSessionExtensions" \
