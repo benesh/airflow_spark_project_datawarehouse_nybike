@@ -137,7 +137,6 @@ CREATE TABLE warehouse.silver.trip_data_nybike(
     weekday_name VARCHAR(255)
 );
 
-
  ---- sql for iceberg 
 
 CREATE DATABASE dw_nybike;

@@ -9,6 +9,8 @@ AWS_S3_ENDPOINT = "{{ var.value.AWS_S3_ENDPOINT }}"
 WAREHOUSE = "{{ var.value.WAREHOUSE }}"
 AWS_ACCESS_KEY_ID = "{{ var.value.AWS_ACCESS_KEY_ID }}"
 AWS_SECRET_ACCESS_KEY = "{{ var.value.AWS_SECRET_ACCESS_KEY }}"
+CATALOG_NAME = "{{ var.value.CATALOG_NAME }}"
+CATALOG_NAME = "{{ var.value.CATALOG_NAME }}"
 
 dag = DAG(
     dag_id = "submit_bronze_etl",
@@ -32,15 +34,15 @@ python_job = SparkSubmitOperator(
     packages="org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.5.0,org.projectnessie.nessie-integrations:nessie-spark-extensions-3.5_2.12:0.102.5,software.amazon.awssdk:bundle:2.20.131,software.amazon.awssdk:url-connection-client:2.20.131",
     conf={
         "spark.sql.extensions": "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions,org.projectnessie.spark.extensions.NessieSparkSessionExtensions",
-        "spark.sql.catalog.warehouse": "org.apache.iceberg.spark.SparkCatalog",
-        "spark.sql.catalog.warehouse.uri": NESSIE_URI,
-        "spark.sql.catalog.warehouse.ref": "main",
-        "spark.sql.catalog.warehouse.authentication.type": "NONE",
-        "spark.sql.catalog.warehouse.catalog-impl": "org.apache.iceberg.nessie.NessieCatalog",
-        "spark.sql.catalog.warehouse.s3.path-style-access": "true",
-        "spark.sql.catalog.warehouse.s3.endpoint": AWS_S3_ENDPOINT,
-        "spark.sql.catalog.warehouse.warehouse": WAREHOUSE,
-        "spark.sql.catalog.warehouse.io-impl": "org.apache.iceberg.aws.s3.S3FileIO",
+        f"spark.sql.catalog.{CATALOG_NAME}": "org.apache.iceberg.spark.SparkCatalog",
+        f"spark.sql.catalog.{CATALOG_NAME}.uri": NESSIE_URI,
+        f"spark.sql.catalog.{CATALOG_NAME}.ref": "main",
+        f"spark.sql.catalog.{CATALOG_NAME}.authentication.type": "NONE",
+        f"spark.sql.catalog.{CATALOG_NAME}.catalog-impl": "org.apache.iceberg.nessie.NessieCatalog",
+        f"spark.sql.catalog.{CATALOG_NAME}.s3.path-style-access": "true",
+        f"spark.sql.catalog.{CATALOG_NAME}.s3.endpoint": AWS_S3_ENDPOINT,
+        f"spark.sql.catalog.{CATALOG_NAME}.warehouse": WAREHOUSE,
+        f"spark.sql.catalog.{CATALOG_NAME}.io-impl": "org.apache.iceberg.aws.s3.S3FileIO",
         "spark.hadoop.fs.s3a.access.key": AWS_ACCESS_KEY_ID,
         "spark.hadoop.fs.s3a.secret.key": AWS_SECRET_ACCESS_KEY,
         "spark.hadoop.fs.s3a.path.style.access": "true",
