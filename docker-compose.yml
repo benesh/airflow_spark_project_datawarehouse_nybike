@@ -377,6 +377,27 @@ services:
     networks:
       - data_ny_bike_net
 
+  # spark_worker:
+  #   image: alexmerced/spark35nb:latest
+  #   ports: 
+  #     - 8888:8888
+  #     - 4040:4040
+  #     - 7077:7077
+  #     - 8080:8080
+  #     - 8081:8081
+  #     - 18080:18080
+  #   env_file: .env
+  #   container_name: notebook
+  #   environment:
+  #     - SPARK_MASTER_HOST=notebook
+  #   volumes:
+  #     - ./notebooks_test:/workspace/notebooks_test
+  #     - ./src/jobs:/opt/airflow/include/jobs
+  #     - ./src/resources:/opt/airflow/include/resoucrces
+  #     - ./volumes_and_data_services/data_nybike:/opt/airflow/data
+  #   networks:
+  #     - data_ny_bike_net
+
   minio:
     image: minio/minio
     container_name: minio

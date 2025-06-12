@@ -4,7 +4,6 @@ FROM  ${AIRFLOW_IMAGE_NAME:-apache/airflow:2.10.3}
 
 RUN pip install apache-airflow-providers-apache-spark==3.0.0 pyspark==3.5.5 sqlmodel
 
-
 USER 0
 
 # # Install Poetry (if not already installed on the base image)
@@ -18,7 +17,6 @@ RUN apt-get update \
   && apt-get autoremove -yqq --purge \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
-
 
 # # Set JAVA_HOME environment variable
 # #ENV JAVA_HOME /usr/lib/jvm/java-11-openjdk-arm64

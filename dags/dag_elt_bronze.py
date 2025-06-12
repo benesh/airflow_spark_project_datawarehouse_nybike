@@ -10,13 +10,16 @@ WAREHOUSE = "{{ var.value.WAREHOUSE }}"
 AWS_ACCESS_KEY_ID = "{{ var.value.AWS_ACCESS_KEY_ID }}"
 AWS_SECRET_ACCESS_KEY = "{{ var.value.AWS_SECRET_ACCESS_KEY }}"
 CATALOG_NAME = "{{ var.value.CATALOG_NAME }}"
-CATALOG_NAME = "{{ var.value.CATALOG_NAME }}"
+APPLICATION_FILE = "{{ var.value.APPLICATION_FILE }}"
 
 dag = DAG(
     dag_id = "submit_bronze_etl",
     default_args= {
         "owner": "Ben omar",
-        "start_date": airflow.utils.dates.days_ago(0)
+        "start_date": airflow.utils.dates.days_ago(0),
+        "catchup": False,
+        "retries": 1,
+        "retry_delay": airflow.utils.dates.timedelta(minutes=5),
     },
     schedule_interval= "@daily"
 )
