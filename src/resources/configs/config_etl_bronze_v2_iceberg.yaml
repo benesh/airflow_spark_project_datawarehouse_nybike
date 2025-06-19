@@ -39,7 +39,7 @@ etl_conf:
     end station id: end_station_id
     end station name: end_station_name
     end station latitude: end_station_latitude
-    end station longitude:  end_station_longitude
+    end station longitude: end_station_longitude
     bikeid: bike_id
     usertype: user_type
     birth year: customer_year_birth

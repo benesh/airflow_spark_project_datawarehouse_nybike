@@ -208,7 +208,6 @@ class AddIdColumnID(DataTransformer):
 class CastToTimestamp(DataTransformer):
     """
     Cast date format 
-    
     """
     def run(self,df:DataFrame,config:Optional[dict]):
         print(f"Cast to timestamp: {config['cast_to_timestamp']}")

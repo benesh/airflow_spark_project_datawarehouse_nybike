@@ -16,4 +16,6 @@ target/
 
 **/.*
 notebooks_test/.Trash-0
-.env 
+.env
+**/__pycache__/**
+**/.Trash-0/**
