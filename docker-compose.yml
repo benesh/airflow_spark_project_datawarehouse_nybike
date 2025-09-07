@@ -355,7 +355,6 @@ services:
       - 8080:8080
       - 4040:4040
 
-
   spark_notebook:
     image: alexmerced/spark35nb:latest
     ports: 
