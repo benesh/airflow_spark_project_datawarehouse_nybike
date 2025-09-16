@@ -99,7 +99,7 @@ services:
       POSTGRES_PASSWORD: airflow
       POSTGRES_DB: airflow
     volumes:
-      - ./volumes_and_data_services/postgres-db-volume:/var/lib/postgresql/data
+      - ./volumes_and_data_services/airflow/postgres-db-volume:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "airflow"]
       interval: 10s
@@ -312,14 +312,14 @@ services:
   db_metadata:
     image: postgres:${POSTGRES_VERSION_TAG}
     # build: ./base_images_services/postgres
-    container_name: postgres_metadata
+    container_name: db_metadata
     networks:
       - data_ny_bike_net
     ports:
       - 5432:5432
     environment:
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_USER=${POSTGRES_USER}
       - PGDATA=/var/lib/postgresql/data/pgdata
       - POSTGRES_DB=catalog
     volumes:
@@ -330,7 +330,7 @@ services:
     build: ./base_images_services/pgadmin4
     restart: always
     environment:
-      - PGADMIN_DEFAULT_EMAIL=${ADMIN_EMAIL}
+      - PGADMIN_DEFAULT_EMAIL=${SOFTWARE_EMAIL}
       - PGADMIN_DEFAULT_PASSWORD=${SOFTWARE_PASSWORD}
       - PGADMIN_LISTEN_PORT=8080
     ports:
@@ -401,8 +401,8 @@ services:
     image: minio/minio
     container_name: minio
     environment:
-      - MINIO_ROOT_USER=admin
-      - MINIO_ROOT_PASSWORD=password
+      - MINIO_ROOT_USER=${MINIO_USER}
+      - MINIO_ROOT_PASSWORD=${MINIO_PASSWORD}
       - MINIO_DOMAIN=minio
     networks:
       - data_ny_bike_net
@@ -486,6 +486,7 @@ networks:
   
 
 volumes:
+  postgres-db-volume:
   jobs:
   data_nybike:
   postgres_data:

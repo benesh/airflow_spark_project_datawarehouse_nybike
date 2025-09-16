@@ -1,23 +1,23 @@
-FROM  docker.io/bitnami/spark:3.5
+FROM  ../base_image_python/Dockerfile
 
-USER root
-RUN apt-get update && apt-get install -y wget tar scala curl
+# Set environment variables
+ENV SPARK_VERSION=3.5.5 \
+    HADOOP_VERSION=3 
 
-ENV HADOOP_VERSION=3.4.1
+# Download and install Spark
+RUN wget -qO- https://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz | \
+    tar zx -C /opt/ && \
+    ln -s /opt/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION} /opt/spark
 
-RUN wget https://dlcdn.apache.org/hadoop/common/hadoop-$HADOOP_VERSION/hadoop-$HADOOP_VERSION.tar.gz
+# Add Spark and Java to PATH
+ENV PATH=$PATH:$SPARK_HOME/bin:$JAVA_HOME/bin \
+    SPARK_HOME=/opt/spark
 
-RUN tar -xf hadoop-$HADOOP_VERSION.tar.gz -C /opt/bitnami \
-    && ln -s /opt/bitnami/hadoop-$HADOOP_VERSION /opt/bitnami/hadoop-$HADOOP_VERSION \
-    && rm hadoop-$HADOOP_VERSION.tar.gz
+# Add Ivy settings for official Maven repository only
+COPY ivysettings.xml /opt/spark/conf/ivysettings.xml
+# COPY spark-defaults.conf /opt/spark/conf/spark-defaults.conf
 
-ENV HADOOP_HOME=/opt/bitnami/hadoop-$HADOOP_VERSION 
-RUN export PATH=$PATH:$HADOOP_HOME/sbin:$HADOOP_HOME/bin
+# Spark default config: point to Ivy settings
+RUN echo "spark.jars.ivySettings /opt/spark/conf/ivysettings.xml" >> /opt/spark/conf/spark-defaults.conf
 
-# RUN curl -s https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-common/3.4.1/hadoop-common-3.4.1.jar -Lo /opt/bitnami/spark/jars/jars/hadoop-common-3.4.1.jar
-# RUN curl -s https://repo1.maven.org/maven2/software/amazon/awssdk/s3/2.29.38/s3-2.29.38.jar -Lo /opt/bitnami/spark/jars/jars/s3-2.29.38.jar
-# RUN curl -s https://repo1.maven.org/maven2/software/amazon/awssdk/bundle/2.29.38/bundle-2.29.38.jar -Lo /opt/bitnami/spark/jars/bundle-2.29.38.jar
-# RUN curl -s https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/3.4.1/hadoop-aws-3.4.1.jar -Lo /opt/bitnami/spark/jars/hadoop-aws-3.4.1.jar
-# RUN curl -s https://repo1.maven.org/maven2/org/postgresql/postgresql/42.7.4/postgresql-42.7.4.jar -Lo /opt/bitnami/spark/jars/postgresql-42.7.4.jar   
-
-RUN pip install notebook boto3 psycopg2-binary pydantic sqlmodel sqlalchemy
+RUN poetry install --with spak

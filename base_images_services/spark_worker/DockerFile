@@ -1,0 +1,12 @@
+FROM ../spark_base/Dockerfile
+
+
+
+# Expose Spark and Jupyter ports
+EXPOSE 7077 8080 8888 4044
+
+# Startup script
+COPY start.sh /start.sh
+RUN chmod +x /start.sh
+
+CMD ["./start.sh"]

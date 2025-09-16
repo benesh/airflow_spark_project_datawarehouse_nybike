@@ -108,7 +108,7 @@ if __name__ == "__main__":
         .appName("spark-etl_nybike_bronze") \
             .getOrCreate()
     
-    path_file=SparkFiles.get("config_etl_bronze_v2_iceberg.yaml")
+    path_file = SparkFiles.get("config_etl_bronze_v2_iceberg.yaml")
     config = config_reader(path=path_file)
 
     data_to_process_list = get_row_to_process('FAILURE_TO_BRONZE_LAYER','TO_BRONZE_LAYER')
