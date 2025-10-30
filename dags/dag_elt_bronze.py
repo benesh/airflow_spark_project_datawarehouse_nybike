@@ -53,8 +53,8 @@ python_job = SparkSubmitOperator(
         "spark.pyspark.python": "/usr/bin/python3.10",
         "spark.pyspark.driver.python": "/home/airflow/.local/bin/python3.12"
     },
-    executor_memory="4g",
-    driver_memory="4g",
+    # executor_memory="4g",
+    # driver_memory="4g",
     files='/opt/airflow/resources/configs/config_etl_bronze_v2_iceberg.yaml',
     py_files='/opt/airflow/jobs/pyspark/interfaces.py,/opt/airflow/jobs/pyspark/readers.py,/opt/airflow/jobs/pyspark/sinkersType.py,/opt/airflow/jobs/pyspark/etl_metadata.py,/opt/airflow/jobs/pyspark/helpers_utils.py,/opt/airflow/jobs/pyspark/transformers.py,/opt/airflow/jobs/pyspark/model_data.py',
     dag=dag,

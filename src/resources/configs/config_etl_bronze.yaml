@@ -6,29 +6,29 @@
 #   table: "source_table"
 #   sink: "database"
 
-source :
-  # reader : "ReaderCSVLocal"
-  root_path : "/opt/airflow/include"
+source:
+  reader: "ReaderCSVLocal"
+  root_path: "/opt/airflow/include"
   process_step: STAGE_DATABASE
 
 target:
   driver: "org.postgresql.Driver"
   sink: "database_table"
-  url : "jdbc:postgresql://db:5432/postgres"
-  user : "root"
-  password : "your-password"
-  mode : "append"
+  url: "jdbc:postgresql://db:5432/postgres"
+  user: "root"
+  password: "your-password"
+  mode: "append"
 
 report:
-  process_name : "ETL-NY-Process-Before-publish"
-  report_type : "ny_bike_report"
-  process_period : "ANNUAL"
+  process_name: "ETL-NY-Process-Before-publish"
+  report_type: "ny_bike_report"
+  process_period: "ANNUAL"
   url: "jdbc:postgresql://db:5432/postgres"
   user: "root"
   dbtable: "REPORT_PROCESS"
   sink: "database_sql"
-  password : "your-password"
-  mode : "append"
+  password: "your-password"
+  mode: "append"
 
 etl_conf:
   columns_to_rename:
@@ -42,7 +42,7 @@ etl_conf:
     end station id: end_station_id
     end station name: end_station_name
     end station latitude: end_station_latitude
-    end station longitude:  end_station_longitude
+    end station longitude: end_station_longitude
     bikeid: bike_id
     usertype: user_type
     birth year: customer_year_birth
@@ -59,15 +59,23 @@ etl_conf:
     end_lng: end_station_longitude
     member_casual: customer_type
 
+  columns_to_delete: ["bikeid"]
+  columns_for_ids:
+    ids_columns:
+      date_id_column: "date_id"
+      station_id_column: "trip_station_nynike_id"
+      fact_id_column: "fact_id"
+    column_to_hash:
+      [
+        "trip_duration",
+        "start_at",
+        "stop_at",
+        "start_station_latitude",
+        "start_station_longitude",
+        "end_station_latitude",
+        "end_station_longitude",
+        "rideable_type",
+      ]
 
-
-  columns_to_delete : ["bikeid"]
-  columns_for_ids :
-    ids_columns :
-      date_id_column : 'date_id'
-      station_id_column : 'trip_station_nynike_id'
-      fact_id_column : 'fact_id'
-    column_to_hash : ['trip_duration','start_at','stop_at','start_station_latitude','start_station_longitude','end_station_latitude','end_station_longitude','rideable_type']
-
-  dimensions_time :  
-    datetime_column : 'start_at'
+  dimensions_time:
+    datetime_column: "start_at"

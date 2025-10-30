@@ -44,28 +44,26 @@
 #
 # Feel free to modify this file to suit your needs.
 ---
-x-airflow-common:
-  &airflow-common
+x-airflow-common: &airflow-common
   # In order to add custom dependencies or upgrade provider packages you can use your extended image.
   # Comment the image line, place your Dockerfile in the directory where you placed the docker-compose.yaml
   # and uncomment the "build" line below, Then run `docker-compose build` to build the images.
   # image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:2.10.4}
   build: ./base_images_services/airflow
-  environment:
-    &airflow-common-env
+  environment: &airflow-common-env
     AIRFLOW__CORE__EXECUTOR: CeleryExecutor
     AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres_airflow/airflow
     AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:airflow@postgres_airflow/airflow
     AIRFLOW__CELERY__BROKER_URL: redis://:@redis:6379/0
-    AIRFLOW__CORE__FERNET_KEY: ''
-    AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
-    AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
-    AIRFLOW__API__AUTH_BACKENDS: 'airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session'
+    AIRFLOW__CORE__FERNET_KEY: ""
+    AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "true"
+    AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+    AIRFLOW__API__AUTH_BACKENDS: "airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session"
     # yamllint disable rule:line-length
     # Use simple http server on scheduler for health checks
     # See https://airflow.apache.org/docs/apache-airflow/stable/administration-and-deployment/logging-monitoring/check-health.html#scheduler-health-check-server
     # yamllint enable rule:line-length
-    AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK: 'true'
+    AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK: "true"
     # WARNING: Use _PIP_ADDITIONAL_REQUIREMENTS option ONLY for a quick checks
     # for other purpose (development, test and especially production usage) build/extend Airflow image.
     _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:-}
@@ -73,7 +71,7 @@ x-airflow-common:
     # If you want to use it, outcomment it and replace airflow.cfg with the name of your config file
     # AIRFLOW_CONFIG: '/opt/airflow/config/airflow.cfg'
   networks:
-      - data_ny_bike_net
+    - data_ny_bike_net
   volumes:
     - ${AIRFLOW_PROJ_DIR:-.}/dags:/opt/airflow/dags
     - ${AIRFLOW_PROJ_DIR:-.}/logs:/opt/airflow/logs
@@ -83,8 +81,7 @@ x-airflow-common:
     - ${AIRFLOW_PROJ_DIR:-.}/src/resources:/opt/airflow/resources
     - ${AIRFLOW_PROJ_DIR:-.}/volumes_and_data_services/data_nybike:/opt/airflow/include
   user: "${AIRFLOW_UID:-50000}:0"
-  depends_on:
-    &airflow-common-depends-on
+  depends_on: &airflow-common-depends-on
     redis:
       condition: service_healthy
     postgres:
@@ -190,7 +187,11 @@ services:
     <<: *airflow-common
     command: triggerer
     healthcheck:
-      test: ["CMD-SHELL", 'airflow jobs check --job-type TriggererJob --hostname "$${HOSTNAME}"']
+      test:
+        [
+          "CMD-SHELL",
+          'airflow jobs check --job-type TriggererJob --hostname "$${HOSTNAME}"',
+        ]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -258,11 +259,11 @@ services:
     # yamllint enable rule:line-length
     environment:
       <<: *airflow-common-env
-      _AIRFLOW_DB_MIGRATE: 'true'
-      _AIRFLOW_WWW_USER_CREATE: 'true'
+      _AIRFLOW_DB_MIGRATE: "true"
+      _AIRFLOW_WWW_USER_CREATE: "true"
       _AIRFLOW_WWW_USER_USERNAME: ${_AIRFLOW_WWW_USER_USERNAME:-airflow}
       _AIRFLOW_WWW_USER_PASSWORD: ${_AIRFLOW_WWW_USER_PASSWORD:-airflow}
-      _PIP_ADDITIONAL_REQUIREMENTS: ''
+      _PIP_ADDITIONAL_REQUIREMENTS: ""
     user: "0:0"
     volumes:
       - ${AIRFLOW_PROJ_DIR:-.}:/sources
@@ -308,11 +309,10 @@ services:
     networks:
       - data_ny_bike_net
 
-
-  db_metadata:
+  db-postgres:
     image: postgres:${POSTGRES_VERSION_TAG}
     # build: ./base_images_services/postgres
-    container_name: db_metadata
+    container_name: db-postgres
     networks:
       - data_ny_bike_net
     ports:
@@ -321,10 +321,10 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_USER=${POSTGRES_USER}
       - PGDATA=/var/lib/postgresql/data/pgdata
-      - POSTGRES_DB=catalog
+      - POSTGRES_DB=${CATALOG}
     volumes:
-      - ./volumes_and_data_services/postgres_data:/var/lib/postgresql/data
-     
+      - ./volumes_and_data_services/pgdata:/var/lib/postgresql/data
+
   pg_admin:
     # image: elestio/pgadmin:${PGAMDIN4_VERSION_TAG}
     build: ./base_images_services/pgadmin4
@@ -338,64 +338,77 @@ services:
     networks:
       - data_ny_bike_net
 
-
-  ubuntu_sys:
-    build: ./base_images_services/ubuntu/
-    container_name: ubuntu_sys
+  spark-master:
+    container_name: spark-master
+    build:
+      context: .
+      dockerfile: ./base_images_services/spark_image/Dockerfile
+    image: spark-image
+    entrypoint: ["./entrypoint.sh", "master"]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
     volumes:
-      - ./notebooks_test:/workspace/notebooks_test
-      - ./src/jobs:/opt/airflow/include/jobs
-      - ./src/resources:/opt/airflow/include/resoucrces
-      - ./volumes_and_data_services/data_nybike:/opt/airflow/data
-    networks:
-     - data_ny_bike_net
+      - ./notebooks_test:/opt/airflow/notebooks
+      - ./src/jobs:/opt/airflow/notebooks/include/jobs
+      - ./src/resources:/opt/airflow/notebooks/include/resources
+      - ./volumes_and_data_services/spark/spark-events:/opt/spark/spark-events
+      - ./volumes_and_data_services/spark/spark-master-logs:/opt/spark/logs
+      - ./volumes_and_data_services/spark/.ivyjars:/opt/spark/.ivy2
+    env_file:
+      - .env.spark
     ports:
-      - 8888:8888
-      - 7077:7077
-      - 8080:8080
-      - 4040:4040
-
-  spark_notebook:
-    image: alexmerced/spark35nb:latest
-    ports: 
-      - 8888:8888
-      - 4040:4040
-      - 7077:7077
-      - 8080:8080
-      - 8081:8081
-      - 18080:18080
-    env_file: .env
-    container_name: notebook
-    environment:
-      - SPARK_MASTER_HOST=notebook
-    volumes:
-      - ./notebooks_test:/workspace/notebooks_test
-      - ./src/jobs:/opt/airflow/include/jobs
-      - ./src/resources:/opt/airflow/include/resoucrces
-      - ./volumes_and_data_services/data_nybike:/opt/airflow/data
+      - "8080:8080" # Spark master Web UI
+      - "7077:7077" # For spark-node-to-spark-node queries
+      - "4040:4040" # Spark worker data
+      - "8889:8889" # Optionaly - Jupyter web UI
     networks:
       - data_ny_bike_net
 
-  # spark_worker:
-  #   image: alexmerced/spark35nb:latest
-  #   ports: 
-  #     - 8888:8888
-  #     - 4040:4040
-  #     - 7077:7077
-  #     - 8080:8080
-  #     - 8081:8081
-  #     - 18080:18080
-  #   env_file: .env
-  #   container_name: notebook
-  #   environment:
-  #     - SPARK_MASTER_HOST=notebook
-  #   volumes:
-  #     - ./notebooks_test:/workspace/notebooks_test
-  #     - ./src/jobs:/opt/airflow/include/jobs
-  #     - ./src/resources:/opt/airflow/include/resoucrces
-  #     - ./volumes_and_data_services/data_nybike:/opt/airflow/data
-  #   networks:
-  #     - data_ny_bike_net
+  spark-history-server:
+    container_name: spark-history
+    build:
+      context: .
+      dockerfile: ./base_images_services/spark_image/Dockerfile
+    image: spark-image
+    entrypoint: ["./entrypoint.sh", "history"]
+    depends_on:
+      - spark-master
+    env_file:
+      - .env.spark
+    volumes:
+      - ./notebooks_test:/opt/airflow/notebooks
+      - ./src/jobs:/opt/airflow/notebooks/include/jobs
+      - ./src/resources:/opt/airflow/notebooks/include/resources
+      - ./volumes_and_data_services/spark/spark-events:/opt/spark/spark-events
+      - ./volumes_and_data_services/spark/.ivyjars:/opt/spark/.ivy2
+    ports:
+      - "18080:18080"
+    networks:
+      - data_ny_bike_net
+
+  spark-worker:
+    container_name: spark-worker
+    build:
+      context: .
+      dockerfile: ./base_images_services/spark_image/Dockerfile
+    image: spark-image
+    entrypoint: ["./entrypoint.sh", "worker"]
+    depends_on:
+      - spark-master
+    env_file:
+      - .env.spark
+    volumes:
+      - ./notebooks_test:/opt/airflow/notebooks
+      - ./src/jobs:/opt/airflow/notebooks/include/jobs
+      - ./src/resources:/opt/airflow/notebooks/include/resources
+      - ./volumes_and_data_services/spark/spark-events:/opt/spark/spark-events
+      - ./volumes_and_data_services/spark/.ivyjars:/opt/spark/.ivy2
+      - ./volumes_and_data_services/spark/spark-worker-logs:/opt/spark/logs
+    networks:
+      - data_ny_bike_net
 
   minio:
     image: minio/minio
@@ -427,10 +440,10 @@ services:
       until (/usr/bin/mc config host add minio http://minio:9000 admin password) do echo '...waiting...' && sleep 1; done;
       tail -f /dev/null
       "
- 
+
   nessie:
     # IMPORTANT: when upgrading Nessie images, make sure to update the spark-sql packages as well
-    image: ghcr.io/projectnessie/nessie:0.103.2
+    image: ghcr.io/projectnessie/nessie:0.105.5
     container_name: nessie
     ports:
       # API port
@@ -442,12 +455,12 @@ services:
       # This example uses Postgres as the version store.
       - nessie.version.store.type=JDBC
       - nessie.version.store.persist.jdbc.datasource=postgresql
-      - quarkus.datasource.postgresql.jdbc.url=jdbc:postgresql://postgres_metadata:5432/catalog
-      - quarkus.datasource.postgresql.username=postgres
-      - quarkus.datasource.postgresql.password=postgres
+      - quarkus.datasource.postgresql.jdbc.url=jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${CATALOG}
+      - quarkus.datasource.postgresql.username=${POSTGRES_USER}
+      - quarkus.datasource.postgresql.password=${POSTGRES_PASSWORD}
     networks:
       - data_ny_bike_net
-  
+
   nessie-cli:
     image: quay.io/projectnessie/nessie-cli:0.103.3
     container_name: nessie-cli
@@ -460,7 +473,7 @@ services:
       - data_ny_bike_net
     environment:
       - NESSIE_URI=http://nessie:19120 # Connect to the Nessie server
-  
+
   dremio:
     platform: linux/x86_64
     image: dremio/dremio-oss:latest
@@ -471,7 +484,7 @@ services:
     container_name: dremio
     networks:
       - data_ny_bike_net
-  
+
   # Superset for Building BI Dashboard
   dashboard:
     image: alexmerced/dremio-superset
@@ -483,7 +496,6 @@ services:
 
 networks:
   data_ny_bike_net:
-  
 
 volumes:
   postgres-db-volume:

@@ -14,7 +14,8 @@ pydantic = "2.10.6"
 psycopg2-binary = "2.9.10"
 
 [tool.poetry.group.sparkmaster.dependencies]
-notebook = "7.3.3"
+notebook = "^7.3.3"
+jupyterlab = "^4.4.7"
 
 [tool.poetry.group.airflow.dependencies]
 pyspark = "3.5.6"

@@ -2,14 +2,14 @@ from pyspark.sql import SparkSession
 from concurrent.futures import ThreadPoolExecutor
 from transformers import runner_transformer_data,DataTransformerObject,FactoryDataTransformer
 from readers import FactoryReader
-from sinkersType import FactorySinkData
+from jobs.pyspark.sinkers import FactorySinkData
 from model_data import ModelDatawahouseNYBike,ModelDatawahouseNYBikeV2
 from helpers_utils import config_reader
 import time
 import yaml
 import os
 from datetime import datetime
-from etl_metadata import ETL_Metadata,log_etl_metadata,get_data_to_process,Data_To_Process,update_data_to_porcess
+from jobs.pyspark.etl_metadata import ETL_Metadata,log_to_audit_metadata,get_data_to_process,Data_To_Process,log_to_data_to_porcess
 
 
 
@@ -26,7 +26,7 @@ def run(data_to_process:Data_To_Process,config:dict):
             month=data_to_process.month,
             data_to_process_id_fk=data_to_process.id
         )
-        log_etl_metadata(metadata)  # Log initial metadata
+        log_to_audit_metadata(metadata)  # Log initial metadata
         
         catalog_transformer = [
             DataTransformerObject(
@@ -63,7 +63,7 @@ def run(data_to_process:Data_To_Process,config:dict):
             )
         ]
 
-        spark = SparkSession.builder \
+        self.spark = SparkSession.builder \
         .appName("spark-submit-ubuntu") \
             .getOrCreate()
         
@@ -89,10 +89,10 @@ def run(data_to_process:Data_To_Process,config:dict):
         metadata.duration = duration
         metadata.rows_processed = rows_processed
         metadata.status = "SUCCESS"
-        log_etl_metadata(metadata)  # Update metadata
+        log_to_audit_metadata(metadata)  # Update metadata
 
         data_to_process.status='TO_PROD_DATABASE'
-        update_data_to_porcess(data_to_process)
+        log_to_data_to_porcess(data_to_process)
         
 
         print("ETL process completed successfully.")
@@ -105,10 +105,10 @@ def run(data_to_process:Data_To_Process,config:dict):
         metadata.duration = duration
         metadata.status = "FAILURE"
         metadata.error_message = str(e)
-        log_etl_metadata(metadata)  # Update metadata with error details
+        log_to_audit_metadata(metadata)  # Update metadata with error details
 
         data_to_process.status='FAILURE_TO_STAGE'
-        update_data_to_porcess(data_to_process)
+        log_to_data_to_porcess(data_to_process)
 
         print(f"ETL process failed: {e}")
 

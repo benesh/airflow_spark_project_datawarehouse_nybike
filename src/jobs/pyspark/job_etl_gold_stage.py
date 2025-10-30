@@ -4,10 +4,10 @@ from pyspark import SparkFiles
 # from concurrent.futures import ThreadPoolExecutor
 from transformers import runner_transformer_data,DataTransformerObject,FactoryDataTransformer
 from readers import FactoryReader
-from sinkersType import FactorySinkData
+from jobs.pyspark.sinkers import FactorySinkData
 from helpers_utils import config_reader,get_row_to_process
 from datetime import datetime
-from etl_metadata import ETL_Metadata,log_etl_metadata,get_data_to_process,Data_To_Process,update_data_to_porcess
+from jobs.pyspark.etl_metadata import ETL_Metadata,log_to_audit_metadata,get_data_to_process,Data_To_Process,log_to_data_to_porcess
 from model_data import silver_schema_ny_bike,ModelDatawahouseGoldNYBike
 
 
@@ -25,7 +25,7 @@ def run(spark:SparkSession,data_to_process:Data_To_Process,config:dict):
             data_to_process_id_fk=data_to_process.id
         )
 
-        log_etl_metadata(metadata)  # Log initial metadata
+        log_to_audit_metadata(metadata)  # Log initial metadata
         
         # catalog_transformer = [
         #     DataTransformerObject(
@@ -92,10 +92,10 @@ def run(spark:SparkSession,data_to_process:Data_To_Process,config:dict):
         metadata.duration = duration
         metadata.rows_processed = rows_processed
         metadata.status = "SUCCESS"
-        log_etl_metadata(metadata)  # Update metadata
+        log_to_audit_metadata(metadata)  # Update metadata
 
         data_to_process.status='FINAL_LAYER'
-        update_data_to_porcess(data_to_process)
+        log_to_data_to_porcess(data_to_process)
         
         print("ETL process completed successfully.")
 
@@ -107,10 +107,10 @@ def run(spark:SparkSession,data_to_process:Data_To_Process,config:dict):
         metadata.duration = duration
         metadata.status = "FAILURE"
         metadata.error_message = str(e)
-        log_etl_metadata(metadata)  # Update metadata with error details
+        log_to_audit_metadata(metadata)  # Update metadata with error details
 
         data_to_process.status='FAILURE_TO_GOLD_LAYER'
-        update_data_to_porcess(data_to_process)
+        log_to_data_to_porcess(data_to_process)
         traceback.print_exc()
         print(f"ETL process failed: {e}")
 
