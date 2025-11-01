@@ -1,25 +1,27 @@
+from types import NoneType
 from pyspark.sql import SparkSession, DataFrame
 from interfaces import ReadData,SinkData,DataTransformer
 from readers import get_reader
 from sinkers import get_sinker
 from data_quality import runner_data_quality_test,BaseDataQualityTest
 from transformers import runner_transformer_data
-
+from typing import Optional
 
 class StepsPipelinesEtl:
 
-    def __init__(self, spark:SparkSession, catalog_transformer:list[DataTransformer], config:dict ):
+    def __init__(self, spark:SparkSession, catalog_transformer:list[DataTransformer]= None, config:dict=None):
         self.spark = spark
         self.read_data = get_reader(config=config['source'])
         self.sink_data = get_sinker(config=config['target'])
-        self.catalog_transformer = catalog_transformer
+        self.catalog_transformer = Optional[catalog_transformer]
         self.config = config
 
     def run(self) -> int:
         # Step 1: Read data
         df:DataFrame = self.read_data.run(self.spark,self.config['source'])
         # Step 2: Transform data
-        df = runner_transformer_data(self.catalog_transformer,df)
+        if self.catalog_transformer is not type(None):
+            df = runner_transformer_data(self.catalog_transformer,df)
         # Step 3: Sink data
         self.sink_data.run(df,self.config['target'])
         # Step 4: Return number of rows processed

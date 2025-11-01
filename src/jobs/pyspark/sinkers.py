@@ -46,27 +46,27 @@ class SinkDataPublishToMainBranch(SinkData):
         spark=df.sparkSession
         spark.sql(f"MERGE BRANCH {config['branch_source']} INTO {config['branch_target']} IN {config['catalog_name']}")
 
+class SinkDataFrameToMultipleTables(SinkData):
+    def run(self,df:DataFrame, config:Optional[dict]):
+        print("Sink data to multiple tables")
+        list_tables = config['list_tables_config']
+        for table_config in list_tables:
+            target=f"{config['catalog_name']}.{config['database']}.{table_config['dbtable']}"
+            if config['mode'] == "append":
+                df.select(*table_config['list_columns']).writeTo(target).append()
+            elif config['mode'] == "overwrite":
+                df.select(*table_config['list_columns']).writeTo(target).overwrite(col( table_config['column_param_overwrite_name']) == table_config['column_param_overwrite_value'] )
+            else:
+                raise ValueError("Unsupported write mode for Iceberg table")
+
 
 FACTORY_SINKER={
     'SinkDataToIceberg': SinkDataToIceberg(),
     'database': SinkDataToDatabase(),
     's3_system':SinkDataToParquetDirectory(),
-    'merging_data': SinkDataPublishToMainBranch()
+    'merging_data': SinkDataPublishToMainBranch(),
+    'sink_data_to_multiple_tables':SinkDataFrameToMultipleTables()
 }
-
-class FactorySinkData:
-    def run(self,df:DataFrame,config:Optional[dict]):
-        sink = config['sink']
-        if sink == 'SinkDataToIceberg':
-            return SinkDataToIceberg().run(df,config)
-        elif sink == 'database':
-            return SinkDataToDatabase().run(df,config)
-        elif sink == 'file_parquet':
-            return SinkDataToParquetDirectory().run(df,config)
-        elif sink == 'merging_data':
-            return SinkDataPublishToMainBranch().run(df,config)
-        else :
-            raise ValueError("sink not found")
 
 def get_sinker(config:dict):
     return FACTORY_SINKER[config['sinker']]

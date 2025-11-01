@@ -117,7 +117,6 @@ source_old_schema_ny_bike = StructType([
     StructField("gender", IntegerType(), nullable=True)  # Gender (e.g., 0 = unknown, 1 = male, 2 = female)
 ])
 
-
 # Define the schema as a StructType
 source_actual_schema_ny_bike = StructType([
     StructField("ride_id", StringType(), nullable=False),         # Unique identifier for the ride
@@ -134,8 +133,6 @@ source_actual_schema_ny_bike = StructType([
     StructField("end_lng", DoubleType(), nullable=True),            # Longitude of the end location
     StructField("member_casual", StringType(), nullable=True)       # User type (e.g., member or casual rider)
 ])
-
-
 
 # Define the schema
 bronze_schema_ny_bike = StructType([
@@ -158,8 +155,6 @@ bronze_schema_ny_bike = StructType([
     StructField("stop_at", StringType(), nullable=True),
     StructField("trip_duration", StringType(), nullable=True)
 ])
-
-
 
 silver_schema_ny_bike = StructType([
     StructField("trip_uuid", StringType(), nullable=True),

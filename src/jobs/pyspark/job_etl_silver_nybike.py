@@ -1,31 +1,13 @@
 from pyspark.sql import SparkSession
 from pyspark import SparkFiles
 from transformers import DataTransformerObject,FactoryDataTransformer
-from helpers_utils import config_reader  
+from helpers_utils import config_reader ,create_and_switch_to_branch
 from datetime import datetime
 from etl_metadata import Audit_Batch_Etl,log_to_audit_metadata,Data_To_Process, get_row_to_process,log_to_data_to_porcess
 from model_data import silver_schema_ny_bike
 import traceback
 from steps_pipeline import StepsPipelinesEtl
-from settings import PATH_FILES
-
-
-def create_branch(start_time,spark,config,process_name) -> str :
-    ## create the name of
-    string_date = str(start_time)
-    string_date_str = string_date.replace(' ', '_').replace(':','_').replace('.','_').replace('-','_')
-    branch_name=f"process_{process_name}__{string_date_str}"
-    # Create a new branch from main
-    spark.sql(f"CREATE BRANCH IF NOT EXISTS {branch_name} IN {config['target']['catalog_name']} FROM main")
-    # Switch to the new branch
-    spark.sql(f"USE REFERENCE {branch_name} IN {config['target']['catalog_name']}")
-
-    ## Merge the branch to the main after write succeded 
-    # spark.sql(f"MERGE BRANCH {branch_name} INTO {config['main_branch']} IN {config['catalog_name']}")
-    # spark.sql(f"DROP BRANCH IF EXISTS {branch_name} IN {config['catalog_name']}")
-
-    return branch_name
-
+# from settings import PATH_FILES
 
 
 def run_etl(spark:SparkSession,data_to_process:Data_To_Process,config:dict,bronze_catalog_transformer :list = None):
@@ -41,7 +23,7 @@ def run_etl(spark:SparkSession,data_to_process:Data_To_Process,config:dict,bronz
         # initialize step transformers
         pipeline = StepsPipelinesEtl(spark=spark, catalog_transformer=bronze_catalog_transformer,config=config)
         #create branch and switch to it
-        branch_silver = create_branch(start_time,spark,config,config['etl_conf']['properties_data_etl']['process_name'])
+        branch_silver = create_and_switch_to_branch(start_time,spark,config,config['etl_conf']['properties_data_etl']['process_name'])
         # run pipeline
         rows_processed += pipeline.run()
 
