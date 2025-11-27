@@ -12,20 +12,19 @@ from steps_pipeline import StepsPipelinesEtl
 from settings import PATH_FILES
 
 
-def run_etl(spark:SparkSession,data_to_process:Data_To_Process,config:dict,bronze_catalog_transformer :list = None):
+def run_etl(spark:SparkSession,data_to_process:Data_To_Process,config:dict,bronze_catalog_transformer : list[DataTransformerObject] = None):
     start_time = datetime.now()
     end_time=None
     rows_processed = 0
     status_audit_processing = config['etl_conf']['properties_audit']['process_status_success']
     data_to_process.status = config['etl_conf']['properties_data_etl']['process_status_success']
     error_message = None
-    try:
 
+    try:
         # initialize step transformers
         pipeline = StepsPipelinesEtl(spark=spark, catalog_transformer=bronze_catalog_transformer,config=config)
         # run pipeline
         rows_processed += pipeline.run()
-
         end_time = datetime.now()
 
     except Exception as e:

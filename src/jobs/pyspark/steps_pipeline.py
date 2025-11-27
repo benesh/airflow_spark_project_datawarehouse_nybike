@@ -13,13 +13,14 @@ class StepsPipelinesEtl:
         self.spark = spark
         self.read_data = get_reader(config=config['source'])
         self.sink_data = get_sinker(config=config['target'])
-        self.catalog_transformer = Optional[catalog_transformer]
+        self.catalog_transformer = catalog_transformer
         self.config = config
 
     def run(self) -> int:
         # Step 1: Read data
         df:DataFrame = self.read_data.run(self.spark,self.config['source'])
         # Step 2: Transform data
+
         if self.catalog_transformer is not type(None):
             df = runner_transformer_data(self.catalog_transformer,df)
         # Step 3: Sink data

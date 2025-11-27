@@ -74,11 +74,11 @@ def log_to_data_to_porcess(data: Data_To_Process):
 
 def get_data_to_process(status:str):
     query_db = QueryDB()
-    statement = select(Data_To_Process).where(Data_To_Process.status==status).order_by(Data_To_Process.id)
+    statement = select(Data_To_Process).where(Data_To_Process.status==status).order_by(Data_To_Process.period_tag)
     result = query_db.read_from_db(statement)
     return result
 
-def get_row_to_process(retry_status:str,new_data_status):
+def get_row_to_process(retry_status:str,new_data_status:str):
     """
     Get the right row to process.
     Read the database, verifying if there isn't a row to retry 
