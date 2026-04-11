@@ -47,3 +47,4 @@ class StepsPipelinesDataQuality:
         if all(r['status'] for r in result):
             self.sink_data.run(df,self.config['target'])
         return result
+

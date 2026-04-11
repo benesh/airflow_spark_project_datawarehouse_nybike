@@ -90,5 +90,5 @@ etl_conf:
   properties_data_etl:
     process_name: "ETL_TO_BRONZE_LAYER"
     process_status_faillure: FAILURE_TO_BRONZE_LAYER
-    process_status_success: TO_PUBLISH_SILVER_LAYER
+    process_status_success: TO_SILVER_LAYER
     process_status: TO_BRONZE_LAYER
