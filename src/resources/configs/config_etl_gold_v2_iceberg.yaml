@@ -1,10 +1,66 @@
 source:
-  reader: IcebergQuery
-  dbtable: warehouse.silver.trip_data_nybike
-  query: select * from {} where dw_period_tag='{}'
+  reader: iceberg_with_partition
+  catalog_name: nybike_catalog
+  database: silver
+  dbtable: trip_data_nybike
+  column_partition: dw_period_tag
+  value_partition: TBD
 
 target:
-  schema: silver
-  sink: SinkDataToIceberg
+  sinker: sink_data_to_multiple_tables
+  catalog_name: nybike_catalog
+  database: gold
+  # mode: overwrite
   mode: append
+  list_tables_config:
+    - dbtable: dim_location
+      list_columns:
+        - trip_uuid
+        - start_station_id
+        - start_station_name
+        - start_station_latitude
+        - start_station_longitude
+        - end_station_id
+        - end_station_name
+        - end_station_latitude
+        - end_station_longitude
+        - start_at
+    - dbtable: fact_trip
+      list_columns:
+        - trip_uuid
+        - enr_rideable_type
+        - start_at
+        - stop_at
+        - enr_trip_duration
+    - dbtable: dim_customer
+      list_columns:
+        - trip_uuid
+        - user_type
+        - enr_user_type
+        - gender
+        - enr_gender
+        - customer_year_birth
+    - dbtable: dim_times
+      list_columns:
+        - trip_uuid
+        - enr_year
+        - enr_quarter
+        - enr_quarter_name
+        - enr_month
+        - enr_month_name
+        - enr_day
+        - enr_weekday
+        - enr_weekday_name
+        - start_at
+        - stop_at
+etl_conf:
+  properties_audit:
+    process_status_faillure: FAILED
+    process_status_success: SUCCESS
+    catalog_name: nybike_catalog
 
+  properties_data_etl:
+    process_name: "ETL_TO_GOLD_LAYER"
+    process_status_faillure: FAILURE_TO_GOLD_LAYER
+    process_status_success: TO_PUBLISH_GOLD_LAYER
+    process_status: TO_GOLD_LAYER

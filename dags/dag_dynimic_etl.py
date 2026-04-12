@@ -60,8 +60,7 @@
 #         executor_memory = "4g",
 #         driver_memory = "4g",
 #         files = config_jobs.get('config_file'),
-#         py_files = '/opt/airflow/jobs/pyspark/interfaces.py,/opt/airflow/jobs/pyspark/readers.py,/opt/airflow/jobs/pyspark/sinkersType.py,/opt/airflow/jobs/pyspark/etl_metadata.py,/opt/airflow/jobs/pyspark/helpers_utils.py,/opt/airflow/jobs/pyspark/transformers.py,/opt/airflow/jobs/pyspark/model_data.py',
-#         dag = dag,
+  #         dag = dag,
 #     )
 
 #     python_job
