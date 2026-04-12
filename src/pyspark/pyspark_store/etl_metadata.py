@@ -5,7 +5,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 from pydantic import BaseModel
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
-from connect_db import SinkDB, QueryDB
+from pyspark.pyspark_store.connect_db import SinkDB, QueryDB
 
 
 

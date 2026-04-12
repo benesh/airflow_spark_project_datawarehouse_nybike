@@ -1,4 +1,4 @@
-from interfaces import SinkData
+from pyspark.pyspark_store.interfaces import SinkData
 from pyspark.sql import DataFrame,Column
 from typing import Optional
 # from pyspark.sql.functions import year,quarter,dayofweek,dayofmonth,month,lit,concat,date_format,count,expr,current_timestamp

@@ -1,4 +1,4 @@
-from interfaces import SinkData
+from pyspark.pyspark_store.interfaces import SinkData
 from pyspark.sql import DataFrame 
 from typing import Optional
 from pyspark.sql.functions import lit,concat,col
