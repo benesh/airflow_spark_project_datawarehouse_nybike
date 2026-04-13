@@ -40,8 +40,7 @@ error_df = df_with_dq.filter(col("dq_passed") == False).drop("dq_passed")
 
 # Step 4: Write the clean records to the specified BigQuery table
 # The BigQuery connector requires a temporary GCS bucket NAME.
-temp_gcs_bucket_name = f"{bq_project}-main-bucket"
-
+  
 clean_df.write \
     .format("bigquery") \
     .option("table", bq_dataset_table) \
