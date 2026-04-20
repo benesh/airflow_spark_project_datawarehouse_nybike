@@ -1,0 +1,94 @@
+source:
+  reader: ReaderCsvFromS3Storage
+  process_step: BRONZE_STAGE
+  group_file_to_read: 10
+
+target:
+  sinker: SinkDataToIceberg
+  catalog_name: nybike_catalog
+  database: bronze
+  mode: append
+  dbtable: trip_data_nybike
+  column_param_overwrite_name: dw_period_tag
+  column_param_overwrite_value: TBD
+
+etl_conf:
+  columns_to_rename:
+    tripduration: trip_duration
+    starttime: start_at
+    stoptime: stop_at
+    start station id: start_station_id
+    start station name: start_station_name
+    start station latitude: start_station_latitude
+    start station longitude: start_station_longitude
+    end station id: end_station_id
+    end station name: end_station_name
+    end station latitude: end_station_latitude
+    end station longitude: end_station_longitude
+    bikeid: bike_id
+    usertype: user_type
+    birth year: customer_year_birth
+    started_at: start_at
+    ended_at: stop_at
+    start_station_name: start_station_name
+    end_station_name: end_station_name
+    end_station_id: end_station_id
+    start_lat: start_station_latitude
+    start_lng: start_station_longitude
+    end_lat: end_station_latitude
+    end_lng: end_station_longitude
+    member_casual: user_type
+    Trip Duration: trip_duration
+    Start Time: start_at
+    Stop Time: stop_at
+    Start Station ID: start_station_id
+    Start Station Name: start_station_name
+    Start Station Latitude: start_station_latitude
+    Start Station Longitude: start_station_longitude
+    End Station ID: end_station_id
+    End Station Name: end_station_name
+    End Station Latitude: end_station_latitude
+    End Station Longitude: end_station_longitude
+    Bike ID: bike_id
+    User Type: user_type
+    Birth Year: customer_year_birth
+    Gender: gender
+
+  data_model:
+    dw_period_tag: string
+    ride_id: string
+    start_station_id: string
+    start_station_name: string
+    start_station_latitude: double
+    start_station_longitude: double
+    end_station_id: string
+    end_station_name: string
+    end_station_latitude: double
+    end_station_longitude: double
+    bike_id: int
+    user_type: string
+    gender: string
+    customer_year_birth: string
+    rideable_type: string
+    start_at: timestamp
+    stop_at: timestamp
+    trip_duration: double
+
+  column_to_add:
+    column_name: dw_period_tag
+    column_value: to_determine
+
+  column_to_cast:
+    timstamp: ["start_at", "stop_at"]
+    double: ["start_station_latitude"]
+
+  properties_audit:
+    process_status_faillure: FAILED
+    process_status_success: SUCCESS
+    catalog_name: nybike_catalog
+
+  properties_data_etl:
+    process_name: "ETL_TO_BRONZE_LAYER"
+    process_status_faillure: FAILURE_TO_BRONZE_LAYER
+    process_status_success: TO_SILVER_LAYER
+    process_status: TO_BRONZE_LAYER

@@ -1,0 +1,27 @@
+[tool.poetry]
+name = "project_etl_pipeline"
+version = "0.1.0"
+description = ""
+authors = ["Ben Omar <bennessh@gmail.com>"]
+readme = "README.md"
+packages = [
+    { include = "*", from = "src" }
+]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+
+
+[tool.poetry.group.spark.dependencies]
+sqlmodel = "^0.0.25"
+pyspark = "3.5.6"
+pydantic = "^2.11.9"
+psycopg2-binary = "^2.9.10"
+
+
+[tool.poetry.group.sparkmaster.dependencies]
+jupyterlab = "^4.4.9"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

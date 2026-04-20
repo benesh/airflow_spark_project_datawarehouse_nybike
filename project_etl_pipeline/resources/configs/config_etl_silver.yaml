@@ -1,0 +1,24 @@
+source:
+  url: "jdbc:postgresql://db:5432/postgres"
+  user: "root"
+  password: 'your-password'
+  driver: "org.postgresql.Driver"
+  # table: "source_table"
+  reader: "database_table"
+
+target:
+  url: "jdbc:postgresql://db:5432/prod_postgres"
+  user: "root"
+  password : "your-password"
+  driver: "org.postgresql.Driver"
+  # table: "dest_table"
+  sink: "database_table"
+  mode: "append"
+
+report:
+  driver : "org.postgresql.Driver"
+  url: "jdbc:postgresql://db:5432/postgres"
+  user: "root"
+  sink: "database_sql"
+  password : "your-password"
+  # mode : "append"
