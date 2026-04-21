@@ -10,7 +10,7 @@ then
   start-master.sh \
     --port $SPARK_MASTER_PORT 
 
-  cd /opt/notebooks
+  cd /
   $PYSPARK_DRIVER_PYTHON_OPTS
 
 elif [[ $SPARK_WORKLOAD == "worker" ]];

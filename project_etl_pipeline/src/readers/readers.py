@@ -1,6 +1,6 @@
-from pyspark.src.interfaces import ReadData
+from interfaces import ReadData
 from pyspark.sql import DataFrame
-from pyspark.src.settings import PATH_FILES
+from settings import PATH_FILES
 
 
 class ReaderCsvFromS3Storage(ReadData):

@@ -408,9 +408,8 @@ services:
       timeout: 3s
       retries: 3
     volumes:
-      - ./notebooks_test:/opt/airflow/notebooks
-      - ./src/jobs:/opt/airflow/notebooks/include/jobs
-      - ./src/resources:/opt/airflow/notebooks/include/resources
+      - ./notebooks_test:/notebooks
+      - ./project_etl_pipeline/jobs:/notebooks/jobs
       - ./volumes_and_data_services/spark/spark-events:/opt/spark/spark-events
       - ./volumes_and_data_services/spark/spark-master-logs:/opt/spark/logs
       - ./volumes_and_data_services/spark/.ivyjars:/opt/spark/.ivy2
@@ -436,11 +435,7 @@ services:
     env_file:
       - .env.spark
     volumes:
-      - ./notebooks_test:/opt/airflow/notebooks
-      - ./src/jobs:/opt/airflow/notebooks/include/jobs
-      - ./src/resources:/opt/airflow/notebooks/include/resources
       - ./volumes_and_data_services/spark/spark-events:/opt/spark/spark-events
-      - ./volumes_and_data_services/spark/.ivyjars:/opt/spark/.ivy2
     ports:
       - "18080:18080"
     networks:
@@ -458,9 +453,6 @@ services:
     env_file:
       - .env.spark
     volumes:
-      - ./notebooks_test:/opt/airflow/notebooks
-      - ./src/jobs:/opt/airflow/notebooks/include/jobs
-      - ./src/resources:/opt/airflow/notebooks/include/resources
       - ./volumes_and_data_services/spark/spark-events:/opt/spark/spark-events
       - ./volumes_and_data_services/spark/.ivyjars:/opt/spark/.ivy2
       - ./volumes_and_data_services/spark/spark-worker-logs:/opt/spark/logs
@@ -479,6 +471,8 @@ services:
     ports:
       - 9001:9001
       - 9000:9000
+    volumes:
+      - ./volumes_and_data_services/volume_minio/data:/data
     command: ["server", "/data", "--console-address", ":9001"]
 
   mc:
@@ -492,9 +486,14 @@ services:
       - AWS_ACCESS_KEY_ID=admin
       - AWS_SECRET_ACCESS_KEY=password
       - AWS_REGION=us-east-1
+    volumes:
+      - ./volumes_and_data_services/data_nybike:/data_nybike
+      - ./start_mc.sh:/start.sh
     entrypoint: |
       /bin/sh -c "
-      until (/usr/bin/mc config host add minio http://minio:9000 admin password) do echo '...waiting...' && sleep 1; done;
+      until (mc alias set minio http://minio:9000 admin your_password) do echo '...waiting...' && sleep 1; done;
+      chmod +x /start_mc.sh
+      /stat.sh;
       tail -f /dev/null
       "
 
@@ -565,3 +564,4 @@ volumes:
   src:
   worker_logs:
   master_logs:
+  data:

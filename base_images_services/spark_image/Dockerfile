@@ -15,13 +15,14 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 ## Download spark and hadoop dependencies and install
-
-# ENV variables
-ENV SPARK_VERSION="3.5.6"
+## ENV variables
+ENV SPARK_VERSION="3.5.8"
 ENV POETRY_VERSION="1.8.1"
 
 ENV SPARK_HOME=/opt/spark
 ENV HADOOP_HOME=/opt/hadoop
+ENV APP_HOME=/pyspark_etl_pipeline
+ENV JOBS_HOME=/jobs
 
 ENV SPARK_MASTER_PORT=7077
 ENV SPARK_MASTER_HOST=spark-master
@@ -40,10 +41,10 @@ WORKDIR ${SPARK_HOME}
 # see resources: https://dlcdn.apache.org/spark/spark-3.5.6/
 # filename: spark-3.5.6-bin-hadoop3.tgz 
 
-RUN mkdir -p ${SPARK_HOME} \
-    && curl https://dlcdn.apache.org/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop3.tgz -o spark-${SPARK_VERSION}-bin-hadoop3.tgz \
-    && tar xvzf spark-${SPARK_VERSION}-bin-hadoop3.tgz --directory ${SPARK_HOME} --strip-components 1 \
-    && rm -rf spark-${SPARK_VERSION}-bin-hadoop3.tgz
+RUN mkdir -p ${SPARK_HOME}
+RUN curl https://dlcdn.apache.org/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop3.tgz -o spark-${SPARK_VERSION}-bin-hadoop3.tgz 
+RUN tar xvzf spark-${SPARK_VERSION}-bin-hadoop3.tgz --directory ${SPARK_HOME} --strip-components 1
+RUN rm -rf spark-${SPARK_VERSION}-bin-hadoop3.tgz
 
 
 # Add spark binaries to shell and enable execution
@@ -52,22 +53,28 @@ RUN chmod u+x /opt/spark/sbin/* && \
 ENV PATH="$PATH:$SPARK_HOME/bin:$SPARK_HOME/sbin" 
 
 # Add a spark config for all nodes
-COPY ./base_images_services/spark_image/spark-defaults.conf "$SPARK_HOME/conf/"
+COPY ./base_images_services/spark_image/spark-defaults.conf $SPARK_HOME/conf/
 
 # Add Ivy settings for official Maven repository only
-COPY ./base_images_services/spark_image/ivysettings.xml /opt/spark/conf/ivysettings.xml
+COPY ./base_images_services/spark_image/ivysettings.xml $SPARK_HOME/conf/ivysettings.xml
 # COPY spark-defaults.conf /opt/spark/conf/spark-defaults.conf
 
 # Spark default config: point to Ivy settings
 # RUN echo "spark.jars.ivySettings /opt/spark/conf/ivysettings.xml" >> /opt/spark/conf/spark-defaults.conf
+RUN echo "spark_base image built with sucecss"
 
 RUN pip3 install poetry==$POETRY_VERSION
 
-COPY src/pyproject.toml . 
-COPY src/poetry.lock .
+WORKDIR $APP_HOME
+
+COPY project_etl_pipeline/pyproject.toml . 
+COPY project_etl_pipeline/poetry.lock .
+COPY project_etl_pipeline/src ./src
+COPY project_etl_pipeline/test ./test
 
 RUN poetry config virtualenvs.create false 
 
+ENV PYTHONPATH=$PYTHONPATH:/pyspark_etl_pipeline/src
 
 FROM spark-base AS pyspark
 
@@ -82,11 +89,14 @@ FROM pyspark AS pyspark-runner
 # Optionally install Jupyter
 FROM pyspark-runner AS pyspark-jupyter
 
+# Install python deps
 RUN poetry install --with sparkmaster
 # RUN pip3 install notebook
 
+WORKDIR /
+
 COPY ./base_images_services/spark_image/entrypoint.sh .
-RUN chmod u+x /opt/spark/entrypoint.sh
+RUN chmod u+x entrypoint.sh
 
 ENV JUPYTER_PORT=8889
 
@@ -98,8 +108,8 @@ ENV PYSPARK_DRIVER_PYTHON_OPTS="jupyter lab --no-browser --allow-root --ip=0.0.0
 # # --allow-root - to run Jupyter in this container by root user. It is adviced to change the user to non-root.
 
 
-ENTRYPOINT ["./entrypoint.sh"]
-CMD [ "bash" ]
+#ENTRYPOINT ["./entrypoint.sh"]
+#CMD [ "bash" ]
 
 # Now go to interactive shell mode
 # -$ docker exec -it spark-master /bin/bash 

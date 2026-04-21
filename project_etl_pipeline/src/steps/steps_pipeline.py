@@ -1,10 +1,10 @@
 from types import NoneType
 from pyspark.sql import SparkSession, DataFrame
-from pyspark.src.interfaces import ReadData,SinkData,DataTransformer
-from pyspark.src.readers import get_reader
-from pyspark.src.sinkers import get_sinker
-from pyspark.pyspark_store.data_quality import runner_data_quality_test,BaseDataQualityTest
-from pyspark.pyspark_store.transformers import runner_transformer_data
+from interfaces import ReadData,SinkData,DataTransformer
+from readers.readers import get_reader
+from sinkers.sinkers import get_sinker
+from dq_tools.data_quality import runner_data_quality_test,BaseDataQualityTest
+from transformers_tools.transformers import runner_transformer_data
 from typing import Optional
 
 class StepsPipelinesEtl:
