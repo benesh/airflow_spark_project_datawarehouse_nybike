@@ -409,7 +409,8 @@ services:
       retries: 3
     volumes:
       - ./notebooks_test:/notebooks
-      - ./project_etl_pipeline/jobs:/notebooks/jobs
+    #  - ./project_etl_pipeline/jobs:/notebooks/jobs
+      - ./project_etl_pipeline:/project_etl_pipeline/
       - ./volumes_and_data_services/spark/spark-events:/opt/spark/spark-events
       - ./volumes_and_data_services/spark/spark-master-logs:/opt/spark/logs
       - ./volumes_and_data_services/spark/.ivyjars:/opt/spark/.ivy2

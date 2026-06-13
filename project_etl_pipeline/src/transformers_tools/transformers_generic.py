@@ -47,8 +47,8 @@ class AddColumnDiffTime(DataTransformer):
         if config['column_ancien'] not in df.columns:
             return add_or_update_column(df,
                                 config['column_result'],                                
-                                lambda df: col(config['column_greather']).cast('long') - col(config['colmun_lesser']).cast('long')
-                                )
+                                lambda df: col(config['column_greather']).cast('long') - col(config['colmun_lesser']).cast('long'))
+        
         return add_or_update_column(df,config['column_result'],col(config['column_ancien']))
     
     

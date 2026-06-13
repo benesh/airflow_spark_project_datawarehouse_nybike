@@ -69,12 +69,12 @@ WORKDIR $APP_HOME
 
 COPY project_etl_pipeline/pyproject.toml . 
 COPY project_etl_pipeline/poetry.lock .
-COPY project_etl_pipeline/src ./src
-COPY project_etl_pipeline/test ./test
+#COPY project_etl_pipeline/src ./src
+#COPY project_etl_pipeline/test ./test
 
 RUN poetry config virtualenvs.create false 
 
-ENV PYTHONPATH=$PYTHONPATH:/pyspark_etl_pipeline/src
+#ENV PYTHONPATH=$PYTHONPATH:/pyspark_etl_pipeline/src
 
 FROM spark-base AS pyspark
 
