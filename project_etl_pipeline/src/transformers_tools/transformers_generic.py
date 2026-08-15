@@ -8,6 +8,7 @@ from pydantic import BaseModel
 from typing import Optional, Callable,Union
 import uuid
 from transformers_nybike import TransformCustomerGenderFormat,AddRideType,AddRideTypeId,TransformCustomerTypeFormat,AddDimensionsForTimes
+
 ExpressionType = Union[Column, Callable[[DataFrame], Column]]
 
 def add_or_update_column(
@@ -43,13 +44,10 @@ class RenameColumn(DataTransformer) :
 
 class AddColumnDiffTime(DataTransformer):
     def run(self,df:DataFrame,config:Optional[dict]) -> DataFrame:
-        print("Duration calculation initiated")
-        if config['column_ancien'] not in df.columns:
-            return add_or_update_column(df,
-                                config['column_result'],                                
-                                lambda df: col(config['column_greather']).cast('long') - col(config['colmun_lesser']).cast('long'))
-        
-        return add_or_update_column(df,config['column_result'],col(config['column_ancien']))
+        return add_or_update_column(df,
+                            config['column_result'],                                
+                            lambda df: col(config['column_greather']).cast('long') - col(config['colmun_lesser']).cast('long'))
+         df.
     
     
 class FillNa(DataTransformer):
@@ -150,10 +148,6 @@ class Cast_To(DataTransformer):
         return df.to(config['schema'])
     
     
-# class Cast_To(DataTransformer):
-#     def run(self,df:DataFrame,config:Optional[dict]):
-#         print(f"Reconcile schema df.to: {config['schema']}")
-#         return df.to(config['schema'])
 
 
 class FactoryDataTransformer(Enum):

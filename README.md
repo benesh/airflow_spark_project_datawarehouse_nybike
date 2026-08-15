@@ -25,7 +25,12 @@ This is a project that aim to implement a datawarehouse that collection to aggre
 
 ```bash
 
-
-
 ```
 
+
+## Notebook command note 
+
+```bash 
+export PYTHONPATH="$PYTHONPATH:/pyspark_etl_pipeline/src"
+
+```
