@@ -10,3 +10,5 @@ env_v2/
 src/jobs/pyspark/__pycache__/*
 .env.airflow
 .env.spark
+.env
+ notebooks_test/.*

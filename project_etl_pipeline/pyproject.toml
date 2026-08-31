@@ -13,9 +13,12 @@ python = "^3.12"
 
 [tool.poetry.group.spark.dependencies]
 sqlmodel = "^0.0.25"
-pyspark = "3.5.9"
+pyspark = "4.2.0"
 pydantic = "^2.11.9"
 psycopg2-binary = "^2.9.10"
+pandas = "^2.2.0"
+findspark = "^2.0.1"
+pyarrow = "^25.0.1"
 
 
 [tool.poetry.group.sparkmaster.dependencies]
