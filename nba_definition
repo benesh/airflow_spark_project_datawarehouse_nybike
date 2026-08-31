@@ -1,0 +1,72 @@
+This header represents standard **NBA player box score and advanced statistics**, as traditionally seen on platforms like *Basketball-Reference*.
+
+Here is a breakdown of every column name, categorized for clarity:
+
+---
+
+### Basic & Bio Information
+
+* **`_c0`**: An internal index or row number generated during data import (e.g., in Spark or Pandas).
+* **`Year`**: The NBA season year (e.g., `2024` for the 2023-24 season).
+* **`Player`**: Player's full name.
+* **`Pos`**: Primary position played (*PG* = Point Guard, *SG* = Shooting Guard, *SF* = Small Forward, *PF* = Power Forward, *C* = Center).
+* **`Age`**: Player's age on February 1st of that season.
+* **`Tm`**: Team abbreviation (or `TOT` if the player was traded and played for multiple teams that season).
+* **`blanl` / `blank2**`: Empty/blank columns resulting from legacy database formatting.
+
+---
+
+### Participation & Minutes
+
+* **`G`**: Games Played.
+* **`GS`**: Games Started.
+* **`MP`**: Total Minutes Played during the season.
+
+---
+
+### Advanced Metrics
+
+* **`PER`** (*Player Efficiency Rating*): A rating per minute that summarizes a player's overall positive and negative statistical contributions (league average is always normalized to 15.0).
+* **`TS%`** (*True Shooting Percentage*): A measure of shooting efficiency that accounts for 2-pointers, 3-pointers, and free throws.
+* **`3PAr`** (*3-Point Attempt Rate*): Percentage of field goal attempts taken from 3-point range.
+* **`FTr`** (*Free Throw Attempt Rate*): Ratio of free throw attempts per field goal attempt.
+* **`ORB%`**: Offensive Rebound Percentage (estimate of available offensive rebounds grabbed while on court).
+* **`DRB%`**: Defensive Rebound Percentage.
+* **`TRB%`**: Total Rebound Percentage.
+* **`AST%`**: Assist Percentage (estimate of teammate field goals assisted while on court).
+* **`STL%`**: Steal Percentage.
+* **`BLK%`**: Block Percentage.
+* **`TOV%`**: Turnover Percentage (turnovers per 100 plays).
+* **`USG%`** (*Usage Percentage*): Estimate of team plays "used" by the player while on court (via field goals, free throws, or turnovers).
+
+---
+
+### Win Shares & Impact
+
+* **`OWS`**: Offensive Win Shares (estimated number of wins contributed by offensive play).
+* **`DWS`**: Defensive Win Shares.
+* **`WS`**: Total Win Shares (`OWS` + `DWS`).
+* **`WS/48`**: Win Shares Per 48 Minutes (league average is ~0.100).
+* **`OBPM`**: Offensive Box Plus/Minus (estimate of offensive points contributed per 100 possessions above a league-average player).
+* **`DBPM`**: Defensive Box Plus/Minus.
+* **`BPM`**: Total Box Plus/Minus (`OBPM` + `DBPM`).
+* **`VORP`** (*Value Over Replacement Player*): Estimate of total team points contributed per 100 possessions over a replacement-level player (converted to a season total).
+
+---
+
+### Counting Stats (Shooting & Actions)
+
+* **`FG` / `FGA` / `FG%**`: Field Goals Made, Attempted, and Field Goal Percentage.
+* **`3P` / `3PA` / `3P%**`: 3-Point Field Goals Made, Attempted, and Percentage.
+* **`2P` / `2PA` / `2P%**`: 2-Point Field Goals Made, Attempted, and Percentage.
+* **`eFG%`** (*Effective Field Goal Percentage*): Adjusts field goal percentage to give 3-pointers 1.5x weight: $\frac{FG + 0.5 \times 3P}{FGA}$.
+* **`FT` / `FTA` / `FT%**`: Free Throws Made, Attempted, and Free Throw Percentage.
+* **`ORB`**: Total Offensive Rebounds.
+* **`DRB`**: Total Defensive Rebounds.
+* **`TRB`**: Total Rebounds (`ORB` + `DRB`).
+* **`AST`**: Total Assists.
+* **`STL`**: Total Steals.
+* **`BLK`**: Total Blocks.
+* **`TOV`**: Total Turnovers.
+* **`PF`**: Total Personal Fouls.
+* **`PTS`**: Total Points scored.
